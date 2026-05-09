@@ -1,0 +1,522 @@
+CURSOR PROMPT — BALLAST LANE TECH TEST
+Project: Full Stack Task Manager
+Deadline: Monday, 18:00 Brazil time
+Language requirement: Everything in this project, including code comments, README, docs, commit-style notes, AI usage documentation, and presentation notes, should be written in English.
+
+TEST CONTEXT
+I received a technical test for a Senior .NET / Full Stack position.
+The goal is to build a simple but well-structured full stack web application with backend, frontend, data layer, authentication, tests, documentation, and conscious use of GenAI tools.
+
+The test asks for:
+- A .NET / C# / ASP.NET Web API.
+- Clean Architecture.
+- Preferably TDD.
+- Full CRUD operations.
+- User creation.
+- User login.
+- Authorized and non-authorized endpoints.
+- A custom data layer.
+- A business logic layer independent from the API and data layer.
+- A frontend integrated with the backend using a modern framework.
+- README with setup instructions.
+- Seed/demo data and credentials.
+- A presentation/documentation explaining the user story, design choices, technical architecture, and thought process.
+- GenAI usage documentation:
+  - prompt used;
+  - generated output or representative sample;
+  - how the AI suggestions were validated;
+  - how the output was corrected or improved;
+  - how edge cases, authentication, and validations were handled.
+
+VERY IMPORTANT RESTRICTION
+The test explicitly forbids:
+- Entity Framework;
+- Dapper;
+- Mediator / MediatR.
+
+Therefore:
+- DO NOT use Entity Framework or EF Core.
+- DO NOT use Dapper.
+- DO NOT use MediatR or Mediator.
+- Use plain ADO.NET with parameterized SQL for data access.
+
+PROJECT GOAL
+Build a full stack Task Manager application.
+
+Suggested user story:
+As an authenticated user, I want to manage my tasks, so I can track what needs to be done, update progress, and organize deadlines.
+
+Main features:
+- Register user.
+- Login user.
+- Generate JWT.
+- Create task.
+- List tasks for the logged-in user.
+- Get task by id.
+- Update task.
+- Delete task.
+- Prevent users from accessing tasks owned by another user.
+- Notify the frontend in real time when a task operation is completed.
+- Show friendly feedback in the frontend.
+- Keep a minimal notification history.
+
+ARCHITECTURE CHOSEN
+Use a single repository with backend and frontend separated by folders.
+
+Suggested structure:
+
+ballastlane-task-manager/
+  backend/
+    TaskManager.sln
+    src/
+      TaskManager.Api/
+      TaskManager.Application/
+      TaskManager.Domain/
+      TaskManager.Infrastructure/
+    tests/
+      TaskManager.UnitTests/
+      TaskManager.IntegrationTests/
+
+  frontend/
+    task-manager-web/
+
+  docs/
+    ai-usage.md
+    architecture.md
+    presentation.md
+    development-log.md
+    design-decisions.md
+
+  docker-compose.yml
+  README.md
+
+DESIGN DECISIONS AND RATIONALE
+Please create docs/design-decisions.md and keep it updated.
+
+Use the following rationale as the initial decision record.
+
+1. Why Task Manager?
+We selected a Task Manager because the exercise itself mentions a task management system as the GenAI example, including CRUD operations, title, description, status, due date, and user association. This keeps the use case aligned with the assignment while still allowing us to demonstrate authentication, authorization, validation, data access, testing, frontend integration, and clean architecture.
+
+2. Why a single repository?
+The submission instructions ask for only one GitHub link and one repository. A monorepo with backend, frontend, and docs keeps the submission easier to review, run, and present.
+
+3. Why .NET 8 + ASP.NET Core Web API with Controllers?
+The role focuses on modern .NET and the test asks for ASP.NET Web API. Controllers make the API layer explicit and easy to review, especially for authentication, authorization, validation, HTTP verbs, request/response contracts, and code review discussion.
+
+4. Why Clean Architecture?
+The test explicitly evaluates Clean Architecture, separation of concerns, and independence of components. The solution should separate Domain, Application, Infrastructure, and API responsibilities so business logic does not depend directly on the database, framework, or HTTP layer.
+
+5. Why ADO.NET?
+The test forbids Entity Framework, Dapper, and Mediator. ADO.NET with parameterized SQL allows us to implement the required custom data access layer while respecting the constraint. It also makes SQL behavior explicit and demonstrates understanding of database access without an ORM.
+
+6. Why SQL Server?
+SQL Server is a strong fit for a .NET backend project and aligns well with enterprise .NET experience. It also works well with Docker Compose and ADO.NET.
+
+7. Why Angular?
+The position is full stack and accepts modern frontend frameworks. Angular is a good fit for a .NET enterprise-style application and allows us to demonstrate services, components, HttpClient, routing, forms, JWT interceptor, guards, state handling, and frontend/backend integration.
+
+8. Why FluentValidation?
+FluentValidation gives clear request validation without mixing validation rules into controllers. It keeps input validation organized and testable. Business rules should still remain in the Application/Domain layer.
+
+9. Why JWT authentication?
+The test requires user creation, login, authorized endpoints, and non-authorized endpoints. JWT is a standard and practical approach for protecting API endpoints in a stateless web API.
+
+10. Why SignalR + BackgroundService + Channel<T>?
+The user experience benefits from real-time feedback after task operations. SignalR allows the backend to notify the Angular frontend without requiring the user to manually check updates. The in-memory Channel<T> and BackgroundService decouple the main task operation from notification delivery while keeping the project runnable locally and avoiding unnecessary external cloud dependencies.
+
+11. Why not Azure Service Bus?
+A durable broker such as Azure Service Bus would be a valid production evolution, but it adds cloud setup, secrets, and external dependencies. For this test, SignalR plus an in-memory background queue demonstrates asynchronous processing and full stack interaction without making local execution harder for reviewers.
+
+12. Why Docker Compose?
+Docker Compose makes it easier for reviewers to run the SQL Server dependency locally and improves the professionalism of the setup. Backend/frontend containers can be added if feasible, but the minimum useful Docker setup is SQL Server.
+
+13. Why unit and integration tests?
+The assignment explicitly asks for unit tests and says TDD is preferable. Unit tests validate business rules and services in isolation. Integration tests validate the API pipeline, authentication, authorization, database behavior, and main user flows.
+
+14. Why document AI usage?
+The assignment explicitly evaluates GenAI usage, prompt engineering, and critical thinking when reviewing AI-generated code. Therefore, all meaningful prompts, outputs, corrections, validations, and human decisions should be documented.
+
+BACKEND TECHNOLOGIES
+Use:
+- .NET 8.
+- ASP.NET Core Web API with Controllers.
+- Clean Architecture.
+- SQL Server.
+- Plain ADO.NET.
+- FluentValidation.
+- JWT Authentication.
+- Password hashing.
+- Dependency Injection.
+- Global exception handling middleware.
+- Correlation ID middleware.
+- Basic request logging.
+- SignalR.
+- BackgroundService.
+- Channel<T> / in-memory queue for notifications.
+- xUnit.
+- Moq.
+- WebApplicationFactory for integration tests.
+- Docker Compose, at least for SQL Server.
+
+Do NOT use:
+- Entity Framework.
+- Dapper.
+- MediatR.
+- Real Azure Service Bus.
+- Microservices.
+- Heavy distributed architecture.
+
+FRONTEND TECHNOLOGIES
+Use:
+- Angular.
+- HttpClient.
+- Services.
+- Components.
+- Reactive Forms if useful.
+- JWT interceptor.
+- Auth guard if useful.
+- SignalR client.
+- Pages/components:
+  - login;
+  - register;
+  - task list;
+  - create task;
+  - edit task;
+  - delete task;
+  - notification/toast area.
+- Loading and error states.
+- Simple responsive layout.
+
+DOMAIN MODEL
+Main entities:
+
+User:
+- Id
+- Name
+- Email
+- PasswordHash
+- CreatedAtUtc
+
+TaskItem:
+- Id
+- UserId
+- Title
+- Description
+- Status
+- DueDate
+- CreatedAtUtc
+- UpdatedAtUtc
+
+Notification:
+- Id
+- UserId
+- TaskId
+- Message
+- Type
+- IsRead
+- CreatedAtUtc
+
+TaskStatus:
+- Pending
+- InProgress
+- Completed
+- Cancelled
+
+LAYERS
+
+TaskManager.Domain
+Responsible for:
+- entities;
+- enums;
+- simple domain rules;
+- domain exceptions if needed.
+
+TaskManager.Application
+Responsible for:
+- DTOs;
+- interfaces;
+- services;
+- business rules;
+- application validations;
+- repository contracts;
+- auth/token/password contracts;
+- notification queue/service contracts.
+
+Suggested interfaces:
+- ITaskService
+- IAuthService
+- ITaskRepository
+- IUserRepository
+- INotificationRepository
+- IPasswordHasher
+- ITokenService
+- INotificationQueue
+- INotificationDispatcher
+
+TaskManager.Infrastructure
+Responsible for:
+- ADO.NET;
+- SqlConnection;
+- SqlCommand;
+- SqlDataReader;
+- DbConnectionFactory;
+- DatabaseInitializer;
+- SQL repositories;
+- password hasher;
+- JWT token service;
+- technical persistence implementation.
+
+TaskManager.Api
+Responsible for:
+- Controllers;
+- request/response models;
+- Program.cs;
+- middlewares;
+- auth configuration;
+- SignalR Hub;
+- basic mapping;
+- HTTP endpoints.
+
+Suggested controllers:
+- AuthController
+- TasksController
+- HealthController
+
+Suggested hub:
+- NotificationHub
+
+Suggested middlewares:
+- ExceptionHandlingMiddleware
+- CorrelationIdMiddleware
+
+DATA ACCESS
+Use plain ADO.NET.
+
+Rules:
+- Always use parameterized SQL.
+- Never concatenate user input into SQL.
+- Create clear repository methods.
+- Keep queries organized and readable.
+- Ensure tasks are always filtered by UserId in protected endpoints.
+
+Suggested operations:
+- CreateUser
+- GetUserByEmail
+- GetUserById
+- CreateTask
+- GetTasksByUserId
+- GetTaskByIdAndUserId
+- UpdateTask
+- DeleteTask
+- CreateNotification
+- GetNotificationsByUserId
+
+SECURITY
+Implement:
+- JWT Bearer Authentication.
+- Password hashing.
+- Public endpoints:
+  - POST /api/auth/register
+  - POST /api/auth/login
+  - GET /api/health
+- Protected endpoints:
+  - GET /api/tasks
+  - GET /api/tasks/{id}
+  - POST /api/tasks
+  - PUT /api/tasks/{id}
+  - DELETE /api/tasks/{id}
+
+Validations:
+- email is required and unique;
+- password is required and has a minimum length;
+- title is required;
+- status is valid;
+- due date is valid;
+- users can only access their own tasks.
+
+VALIDATION
+Use FluentValidation for request validation:
+- RegisterUserRequestValidator
+- LoginRequestValidator
+- CreateTaskRequestValidator
+- UpdateTaskRequestValidator
+
+Rule:
+- FluentValidation is for input/request validation.
+- Business rules remain in Application/Domain.
+
+SIGNALR + BACKGROUND QUEUE
+Goal:
+When a user creates, updates, or deletes a task, the API should complete the main operation and enqueue a notification.
+A BackgroundService processes that queue and sends the message to the frontend through SignalR.
+
+Flow:
+1. User performs an action in Angular.
+2. API validates the request.
+3. Application service executes the rule.
+4. Repository persists the data.
+5. Notification is persisted or created.
+6. A notification message is enqueued in Channel<T>.
+7. Endpoint returns the response.
+8. BackgroundService consumes the queue.
+9. SignalR sends the notification to the connected user.
+10. Frontend shows a toast/banner.
+
+Important:
+- SignalR should be used for real-time notification.
+- The queue can be in-memory with Channel<T>.
+- Do not use real Azure Service Bus in this test.
+- Document that in production, the in-memory queue could be replaced with Azure Service Bus, RabbitMQ, or another durable broker.
+
+TESTS
+Create meaningful tests, not symbolic tests only.
+
+Unit tests:
+- TaskService_Create_ShouldFail_WhenTitleIsEmpty
+- TaskService_Create_ShouldCreateTask_WhenRequestIsValid
+- TaskService_Update_ShouldFail_WhenTaskDoesNotBelongToUser
+- TaskService_Delete_ShouldFail_WhenTaskDoesNotExist
+- AuthService_Register_ShouldFail_WhenEmailAlreadyExists
+- AuthService_Login_ShouldFail_WhenPasswordIsInvalid
+- TaskItem_ShouldNotAllowInvalidStatus, if there is a domain rule
+
+Integration tests:
+- Register user returns success.
+- Login returns JWT.
+- Create task without token returns 401.
+- Create task with token returns success.
+- Get tasks returns only current user tasks.
+- Update task updates fields.
+- Delete task removes task.
+- Health endpoint returns success.
+
+DOCKER
+Create docker-compose.yml with:
+- SQL Server container.
+- Optional: backend container, if feasible.
+- Optional: frontend container, if it does not increase risk too much.
+
+Minimum expected:
+- SQL Server runs through Docker Compose.
+- README explains how to run it.
+
+README
+Must include:
+- project overview;
+- stack used;
+- architecture;
+- assignment restrictions;
+- how to run backend;
+- how to run frontend;
+- how to run tests;
+- how to start the database;
+- seed/demo credentials;
+- main endpoints;
+- GenAI usage notes;
+- technical decisions;
+- trade-offs;
+- future improvements.
+
+MANDATORY GENAI DOCUMENTATION
+Create docs/ai-usage.md.
+
+It should include:
+1. Tools used:
+   - Cursor;
+   - ChatGPT, if applicable;
+   - other tools if used.
+
+2. Prompts used:
+   - keep history of relevant prompts.
+
+3. Generated output:
+   - include representative samples, not the whole project.
+
+4. Validation:
+   - how the project was compiled;
+   - how tests were executed;
+   - how architecture was reviewed;
+   - how it was verified that EF/Dapper/Mediator were not used;
+   - how SQL injection risks were reviewed;
+   - how JWT/auth was validated;
+   - how endpoints were tested;
+   - how frontend was tested.
+
+5. Corrections made:
+   - layer adjustments;
+   - removal of forbidden dependencies;
+   - validation improvements;
+   - test additions;
+   - error handling adjustments;
+   - frontend adjustments;
+   - SignalR/notification flow adjustments.
+
+AUTOMATIC DEVELOPMENT LOG
+Create and maintain docs/development-log.md.
+
+Cursor should update this file throughout development, without waiting for me to manually write everything.
+
+Suggested format:
+
+## YYYY-MM-DD HH:mm — Step title
+
+### What was requested
+Summary of what was requested.
+
+### What was generated/changed
+Files created/changed.
+
+### Technical decisions
+Decisions made and why.
+
+### Validation performed
+Build, tests, manual review, endpoints tested.
+
+### Issues / TODO
+Pending items and risks.
+
+### AI involvement
+Prompt used, relevant output, and human adjustments.
+
+IMPORTANT:
+Before each large change, show me a short plan.
+After each relevant change, update docs/development-log.md.
+When GenAI is used to generate code, record it in docs/ai-usage.md or prepare it for later consolidation.
+
+WHAT I WANT FROM YOU NOW
+Before implementing, review this plan and answer:
+
+1. Do you agree with the chosen architecture?
+2. Is there any technical risk or scope issue considering the deadline?
+3. Do you recommend any stack change?
+4. Do you recommend keeping SignalR + BackgroundService + Channel<T>?
+5. Do you recommend any folder structure change?
+6. What is the ideal implementation order?
+7. Which files should we create first?
+8. Which points require the most attention because EF/Dapper/Mediator are forbidden?
+9. How do you suggest organizing the tests?
+10. How do you suggest organizing the documentation for the final presentation?
+
+After your recommendation, we will execute step by step.
+
+EXECUTION MODE
+Work in small steps:
+1. Planning and structure.
+2. Backend skeleton.
+3. Domain/Application.
+4. Infrastructure ADO.NET.
+5. Auth/JWT.
+6. Task CRUD.
+7. Notifications/SignalR.
+8. Tests.
+9. Angular frontend.
+10. Docker/README/docs.
+11. Final review.
+
+Do not implement everything at once without explaining.
+Do not use EF, Dapper, or Mediator.
+Do not create multiple repositories.
+Do not ignore GenAI documentation.
+Keep everything in English.
+Prioritize functional, clean, testable, and presentable code.

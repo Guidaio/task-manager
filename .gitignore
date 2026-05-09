@@ -1,0 +1,45 @@
+## Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]uild/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.cache
+
+## Visual Studio / Rider
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+.idea/
+*.DotSettings.user
+
+## NuGet
+**/packages/
+*.nupkg
+*.snupkg
+
+## Test results
+[Tt]est[Rr]esult*/
+*.trx
+coverage*.json
+coverage*.xml
+
+## Angular / Node (frontend)
+node_modules/
+/dist/
+/.angular/
+npm-debug.log*
+yarn-error.log*
+
+## OS / tooling
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+## Docker / local env (keep compose in repo; ignore overrides if added later)
+.env
+.env.local

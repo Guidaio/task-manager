@@ -1,0 +1,472 @@
+PROMPT PARA CURSOR — BALLAST LANE TECH TEST
+Projeto: Full Stack Task Manager
+Deadline: segunda-feira, 18:00 Brazil time
+
+CONTEXTO DO TESTE
+Recebi um teste técnico para uma vaga Senior .NET / Full Stack.
+O objetivo é desenvolver uma aplicação web simples, mas bem estruturada, com backend, frontend, data layer, autenticação, testes, documentação e uso consciente de GenAI.
+
+O teste pede:
+- API em .NET / C# / ASP.NET Web API.
+- Aplicação com Clean Architecture.
+- Uso preferencial de TDD.
+- CRUD completo de registros.
+- Criação de usuário.
+- Login de usuário.
+- Endpoints autorizados e não autorizados.
+- Data layer próprio.
+- Business logic layer independente da API e da camada de dados.
+- Frontend integrado ao backend usando framework moderno.
+- README com setup.
+- Dados/credenciais seed para demo.
+- Apresentação/documentação explicando user story, design choices, arquitetura e thought process.
+- Uso de ferramenta GenAI documentado:
+  - prompt usado;
+  - output gerado ou amostra representativa;
+  - como validei o código sugerido;
+  - como corrigi/melhorei;
+  - como tratei edge cases, autenticação e validações.
+
+RESTRIÇÃO MUITO IMPORTANTE
+O teste proíbe explicitamente:
+- Entity Framework;
+- Dapper;
+- Mediator / MediatR.
+
+Portanto:
+- NÃO usar EF Core.
+- NÃO usar Dapper.
+- NÃO usar MediatR.
+- Para acesso a dados, usar ADO.NET puro com SQL parametrizado.
+
+OBJETIVO DO PROJETO
+Criar um Task Manager full stack.
+
+User story sugerida:
+As an authenticated user, I want to manage my tasks, so I can track what needs to be done, update progress, and organize deadlines.
+
+Funcionalidades principais:
+- Registrar usuário.
+- Login.
+- Gerar JWT.
+- Criar task.
+- Listar tasks do usuário logado.
+- Buscar task por id.
+- Atualizar task.
+- Deletar task.
+- Impedir usuário de acessar tasks de outro usuário.
+- Notificar frontend em tempo real quando uma ação de task for concluída.
+- Exibir feedback amigável no frontend.
+- Manter histórico mínimo de notificações.
+
+ARQUITETURA ESCOLHIDA
+Usar um único repositório, com backend e frontend separados por pastas.
+
+Estrutura sugerida:
+
+ballastlane-task-manager/
+  backend/
+    TaskManager.sln
+    src/
+      TaskManager.Api/
+      TaskManager.Application/
+      TaskManager.Domain/
+      TaskManager.Infrastructure/
+    tests/
+      TaskManager.UnitTests/
+      TaskManager.IntegrationTests/
+
+  frontend/
+    task-manager-web/
+
+  docs/
+    ai-usage.md
+    architecture.md
+    presentation.md
+    development-log.md
+
+  docker-compose.yml
+  README.md
+
+BACKEND — TECNOLOGIAS
+Usar:
+- .NET 8.
+- ASP.NET Core Web API com Controllers.
+- Clean Architecture.
+- SQL Server.
+- ADO.NET puro.
+- FluentValidation.
+- JWT Authentication.
+- Password hashing.
+- Dependency Injection.
+- Global exception handling middleware.
+- Correlation ID middleware.
+- Request logging básico.
+- SignalR.
+- BackgroundService.
+- Channel<T> / fila em memória para notificações.
+- xUnit.
+- Moq.
+- WebApplicationFactory para testes de integração.
+- Docker Compose, pelo menos com SQL Server.
+
+NÃO usar:
+- Entity Framework.
+- Dapper.
+- MediatR.
+- Azure Service Bus real.
+- Microservices.
+- Arquitetura distribuída pesada.
+
+FRONTEND — TECNOLOGIAS
+Usar:
+- Angular.
+- HttpClient.
+- Services.
+- Components.
+- Reactive Forms, se fizer sentido.
+- JWT interceptor.
+- Auth guard, se fizer sentido.
+- SignalR client.
+- Telas:
+  - login;
+  - register;
+  - task list;
+  - create task;
+  - edit task;
+  - delete task;
+  - notification/toast area.
+- Loading/error states.
+- Layout responsivo simples.
+
+DOMÍNIO
+Entidades principais:
+
+User:
+- Id
+- Name
+- Email
+- PasswordHash
+- CreatedAtUtc
+
+TaskItem:
+- Id
+- UserId
+- Title
+- Description
+- Status
+- DueDate
+- CreatedAtUtc
+- UpdatedAtUtc
+
+Notification:
+- Id
+- UserId
+- TaskId
+- Message
+- Type
+- IsRead
+- CreatedAtUtc
+
+TaskStatus:
+- Pending
+- InProgress
+- Completed
+- Cancelled
+
+CAMADAS
+
+TaskManager.Domain
+Responsável por:
+- entidades;
+- enums;
+- regras simples de domínio;
+- exceções de domínio, se necessário.
+
+TaskManager.Application
+Responsável por:
+- DTOs;
+- interfaces;
+- services;
+- business rules;
+- validações de aplicação;
+- contratos de repositories;
+- contratos de auth/token/password;
+- contratos de notification queue/service.
+
+Interfaces sugeridas:
+- ITaskService
+- IAuthService
+- ITaskRepository
+- IUserRepository
+- INotificationRepository
+- IPasswordHasher
+- ITokenService
+- INotificationQueue
+- INotificationDispatcher
+
+TaskManager.Infrastructure
+Responsável por:
+- ADO.NET;
+- SqlConnection;
+- SqlCommand;
+- SqlDataReader;
+- DbConnectionFactory;
+- DatabaseInitializer;
+- repositories SQL;
+- password hasher;
+- JWT token service;
+- implementação técnica de persistência.
+
+TaskManager.Api
+Responsável por:
+- Controllers;
+- request/response models;
+- Program.cs;
+- middlewares;
+- auth configuration;
+- SignalR Hub;
+- mapping básico;
+- endpoints HTTP.
+
+Controllers sugeridos:
+- AuthController
+- TasksController
+- HealthController
+
+Hubs:
+- NotificationHub
+
+Middlewares:
+- ExceptionHandlingMiddleware
+- CorrelationIdMiddleware
+
+ACESSO A DADOS
+Usar ADO.NET puro.
+
+Regras:
+- Sempre usar SQL parametrizado.
+- Nunca concatenar input do usuário em SQL.
+- Criar métodos claros nos repositories.
+- Manter queries organizadas e legíveis.
+- Garantir que as tasks são sempre filtradas por UserId nos endpoints protegidos.
+
+Exemplos de operações:
+- CreateUser
+- GetUserByEmail
+- GetUserById
+- CreateTask
+- GetTasksByUserId
+- GetTaskByIdAndUserId
+- UpdateTask
+- DeleteTask
+- CreateNotification
+- GetNotificationsByUserId
+
+SEGURANÇA
+Implementar:
+- JWT Bearer Authentication.
+- Password hashing.
+- Endpoints públicos:
+  - POST /api/auth/register
+  - POST /api/auth/login
+  - GET /api/health
+- Endpoints protegidos:
+  - GET /api/tasks
+  - GET /api/tasks/{id}
+  - POST /api/tasks
+  - PUT /api/tasks/{id}
+  - DELETE /api/tasks/{id}
+
+Validações:
+- email obrigatório e único;
+- password obrigatório com tamanho mínimo;
+- title obrigatório;
+- status válido;
+- due date válida;
+- usuário só pode acessar suas próprias tasks.
+
+VALIDAÇÃO
+Usar FluentValidation para requests:
+- RegisterUserRequestValidator
+- LoginRequestValidator
+- CreateTaskRequestValidator
+- UpdateTaskRequestValidator
+
+Regra:
+- FluentValidation para validação de entrada/request.
+- Business rules continuam em Application/Domain.
+
+SIGNALR + BACKGROUND QUEUE
+Objetivo:
+Quando o usuário criar, atualizar ou deletar uma task, a API deve concluir a operação principal e enfileirar uma notificação.
+Um BackgroundService processa essa fila e envia a mensagem para o frontend via SignalR.
+
+Fluxo:
+1. Usuário executa ação no Angular.
+2. API valida request.
+3. Application service executa regra.
+4. Repository persiste dados.
+5. Notification é persistida ou criada.
+6. Uma mensagem é enfileirada em Channel<T>.
+7. Endpoint retorna resposta.
+8. BackgroundService consome a fila.
+9. SignalR envia notificação para o usuário conectado.
+10. Frontend exibe toast/banner.
+
+Importante:
+- SignalR deve ser usado para notificação em tempo real.
+- A fila pode ser em memória com Channel<T>.
+- Não usar Azure Service Bus real neste teste.
+- Documentar que, em produção, a fila em memória poderia ser substituída por Azure Service Bus, RabbitMQ ou outro broker durável.
+
+TESTES
+Criar testes suficientes, não apenas simbólicos.
+
+Unit tests:
+- TaskService_Create_ShouldFail_WhenTitleIsEmpty
+- TaskService_Create_ShouldCreateTask_WhenRequestIsValid
+- TaskService_Update_ShouldFail_WhenTaskDoesNotBelongToUser
+- TaskService_Delete_ShouldFail_WhenTaskDoesNotExist
+- AuthService_Register_ShouldFail_WhenEmailAlreadyExists
+- AuthService_Login_ShouldFail_WhenPasswordIsInvalid
+- TaskItem_ShouldNotAllowInvalidStatus, se houver regra de domínio
+
+Integration tests:
+- Register user returns success.
+- Login returns JWT.
+- Create task without token returns 401.
+- Create task with token returns success.
+- Get tasks returns only current user tasks.
+- Update task updates fields.
+- Delete task removes task.
+- Health endpoint returns success.
+
+DOCKER
+Criar docker-compose.yml com:
+- SQL Server container.
+- Opcional: backend container, se couber bem.
+- Opcional: frontend container, se não aumentar muito o risco.
+
+O mínimo esperado:
+- subir SQL Server via Docker Compose;
+- README explicar como rodar.
+
+README
+Deve conter:
+- visão geral do projeto;
+- stack utilizada;
+- arquitetura;
+- restrições do teste;
+- como rodar backend;
+- como rodar frontend;
+- como rodar testes;
+- como subir banco;
+- credenciais seed/demo;
+- endpoints principais;
+- observações sobre uso de GenAI;
+- decisões técnicas;
+- trade-offs;
+- melhorias futuras.
+
+DOCUMENTAÇÃO OBRIGATÓRIA DE GENAI
+Criar docs/ai-usage.md.
+
+Deve conter:
+1. Ferramentas usadas:
+   - Cursor;
+   - ChatGPT, se aplicável;
+   - outras, se forem usadas.
+
+2. Prompts usados:
+   - manter histórico dos prompts relevantes.
+
+3. Output gerado:
+   - incluir amostras representativas, não precisa colar o projeto inteiro.
+
+4. Validação:
+   - como compilei;
+   - como rodei testes;
+   - como revisei arquitetura;
+   - como verifiquei que não usou EF/Dapper/Mediator;
+   - como revisei SQL injection;
+   - como validei JWT/auth;
+   - como testei endpoints;
+   - como testei frontend.
+
+5. Correções feitas:
+   - ajustes de camada;
+   - remoção de dependências proibidas;
+   - melhoria de validações;
+   - inclusão de testes;
+   - ajustes de tratamento de erro;
+   - ajustes no frontend;
+   - ajustes no SignalR/notification flow.
+
+LOG AUTOMÁTICO DO DESENVOLVIMENTO
+Criar e manter docs/development-log.md.
+
+Você, Cursor, deve atualizar esse arquivo ao longo do desenvolvimento, sem esperar que eu faça manualmente tudo.
+
+Formato sugerido:
+
+## YYYY-MM-DD HH:mm — Step title
+
+### What was requested
+Resumo do que foi pedido.
+
+### What was generated/changed
+Arquivos criados/alterados.
+
+### Technical decisions
+Decisões tomadas e por quê.
+
+### Validation performed
+Build, tests, revisão manual, endpoints testados.
+
+### Issues / TODO
+Pendências e riscos.
+
+### AI involvement
+Prompt usado, output relevante, ajustes feitos pelo humano.
+
+IMPORTANTE:
+Antes de cada grande alteração, me mostre um plano curto.
+Depois de cada alteração relevante, atualize docs/development-log.md.
+Quando usar GenAI para gerar código, registre em docs/ai-usage.md ou deixe preparado para consolidar depois.
+
+O QUE EU QUERO DE VOCÊ AGORA
+Antes de começar a implementar, revise este plano e responda:
+
+1. Você concorda com a arquitetura escolhida?
+2. Existe algum risco técnico ou excesso de escopo considerando o prazo até segunda 18:00?
+3. Você recomenda alguma alteração na stack?
+4. Você recomenda manter SignalR + BackgroundService + Channel<T>?
+5. Você recomenda alguma mudança na estrutura de pastas?
+6. Qual seria a ordem ideal de implementação?
+7. Quais arquivos devemos criar primeiro?
+8. Quais pontos exigem mais atenção por causa da restrição sem EF/Dapper/Mediator?
+9. Como você sugere organizar os testes?
+10. Como você sugere organizar a documentação para apresentação?
+
+Depois da sua recomendação, vamos executar passo a passo.
+
+MODO DE EXECUÇÃO
+Trabalhar em etapas pequenas:
+1. Planejamento e estrutura.
+2. Backend skeleton.
+3. Domain/Application.
+4. Infrastructure ADO.NET.
+5. Auth/JWT.
+6. Task CRUD.
+7. Notifications/SignalR.
+8. Tests.
+9. Angular frontend.
+10. Docker/README/docs.
+11. Revisão final.
+
+Não implemente tudo de uma vez sem me explicar.
+Não use EF, Dapper ou Mediator.
+Não crie múltiplos repositórios.
+Não ignore documentação de GenAI.
+Priorize código funcional, limpo, testável e apresentável.
