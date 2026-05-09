@@ -139,6 +139,6 @@ Also inspect `*.csproj` files for `<PackageReference>` entries.
 |------|----------------|
 | Planning | Core-green checklist before SignalR/notifications. |
 | Step 2 | `TaskStatus` → `TaskItemStatus` to avoid BCL name clash. |
-| Step 2 | Adopt `Result`/`Result<T>` for application-level failures. |
+| Step 3 | ADO.NET repositories, initializer + seed, BCrypt hashing, symmetric JWT issuance + bearer middleware wired at startup (HTTP endpoints still pending). |
 
 Further rows should be appended as the project evolves.

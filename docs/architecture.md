@@ -12,12 +12,12 @@ This document distinguishes **what exists in code today** from **what is planned
 
 | Area | Status | Notes |
 |------|--------|--------|
-| Solution layout (`Domain`, `Application`, `Infrastructure`, `Api`, tests) | **Implemented** | Projects and references exist; API host is still a minimal placeholder until wired. |
+| Solution layout (`Domain`, `Application`, `Infrastructure`, `Api`, tests) | **Implemented** | Projects exist; Api hosts composition root, JWT bearer + initializer + minimal `/` probe until controllers ship. |
 | **Domain** (entities, enums) | **Implemented** | `User`, `TaskItem`, `Notification`, `TaskItemStatus`, `NotificationType`. |
 | **Application** (services, DTOs, contracts, `Result`) | **Implemented** | `AuthService`, `TaskService`, repository/auth abstractions; unit tests cover core rules with mocks. |
-| **Infrastructure** (ADO.NET, repositories, DB initializer, seed) | **Planned** | Not implemented yet; no SQL repositories or initializer in production code paths. |
-| **API** (controllers, middleware, FluentValidation, Swagger optional) | **Planned** | Minimal API stub may exist; **no** auth/task HTTP endpoints documented as complete yet. |
-| **JWT authentication** | **Planned** | Interfaces exist in Application; ASP.NET JWT configuration and endpoints **not** wired yet. |
+| **Infrastructure** (ADO.NET, repositories, DB initializer, seed, hashing, JWT issuance) | **Implemented** | `SqlConnectionFactory`, `UserRepository`, `TaskRepository`, `NotificationRepository`, `DatabaseInitializer` (schema + demo seed), `PasswordHasher` (BCrypt), `JwtTokenService` (HS256). Registered via `AddInfrastructure`. |
+| **API** (controllers, middleware, FluentValidation) | **Partial** | Host wires DI, **JWT bearer authentication**, runs DB initializer on startup, exposes a minimal `/` probe only — **no** auth/task controllers or FluentValidation yet. |
+| **JWT authentication** | **Partial** | ASP.NET JWT bearer validation configured; `ITokenService` issues tokens — **no** register/login HTTP endpoints until API controllers land. |
 | **Angular frontend** | **Planned** | Frontend folder placeholder only; SPA not scaffolded yet. |
 | **`SignalR` + `BackgroundService` + `Channel<T>`** | **Planned** | Deferred until **core green** per project rules; not implemented yet. |
 | Unit tests (Application) | **Implemented** | Eight tests targeting `AuthService` / `TaskService`. |

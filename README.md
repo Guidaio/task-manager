@@ -59,6 +59,17 @@ SignalR and notification work starts only after this checklist is complete:
 - Main integration tests pass.
 - README has minimum run instructions.
 
+## Demo Credentials
+
+After the database initializer runs (API startup with SQL Server available), a demo user is seeded if missing:
+
+| Field | Value |
+|--------|--------|
+| Email | `demo@taskmanager.local` |
+| Password | `Demo_user_12345` |
+
+Fixed demo user id (for reference): `11111111-1111-1111-1111-111111111111`. Two sample tasks are seeded when that user has no tasks.
+
 ## Minimum Run Instructions
 
 Start SQL Server:
@@ -79,11 +90,13 @@ Run backend tests:
 dotnet test .\backend\TaskManager.sln
 ```
 
-The backend and frontend run commands will be completed when those layers are implemented.
+Run the API (Development profile uses `appsettings.Development.json`; requires SQL Server reachable):
 
-## Demo Credentials
+```powershell
+dotnet run --project .\backend\src\TaskManager.Api\TaskManager.Api.csproj
+```
 
-Seed/demo credentials will be added with the database initializer.
+Angular client scaffolding and controller-level HTTP endpoints will be added in subsequent milestones.
 
 ## Final Smoke Test Checklist
 

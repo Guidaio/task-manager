@@ -7,7 +7,7 @@ Use this document as a **short speaker outline** for the technical demo and **co
 ## Project overview
 
 - **Purpose:** Full stack **Task Manager** for the Ballast Lane–style Senior .NET exercise: authenticated users manage **their own** tasks (CRUD), with clean layering, custom persistence (no EF/Dapper/MediatR), tests, and documented GenAI usage.
-- **Backend:** .NET 8, ASP.NET Core Web API (**Controllers**), Clean Architecture, SQL Server, **ADO.NET**, JWT auth (**planned** wiring), FluentValidation (**planned** on API requests).
+- **Backend:** .NET 8, ASP.NET Core Web API (**Controllers** planned for HTTP surface), Clean Architecture, SQL Server, **ADO.NET**, JWT bearer **middleware + token issuance implemented**; register/login **HTTP endpoints still planned**.
 - **Frontend:** Angular SPA (**planned**): login/register, task CRUD, responsive UI, JWT interceptor, SignalR client for notifications (**after core green**).
 - **Docs:** README runbook, architecture/design/AI logs, development log per milestone.
 
@@ -23,8 +23,8 @@ As an **authenticated user**, I want to **manage my tasks**, so I can track what
 
 - **Domain:** Entities and enums (`User`, `TaskItem`, `Notification`, `TaskItemStatus`, …).
 - **Application:** Use cases (`AuthService`, `TaskService`), DTOs, repository/token/password **interfaces**, **`Result`/`Result<T>`** for expected failures.
-- **Infrastructure:** (**Planned**) ADO.NET repositories, DB initializer + seed, password hashing and JWT implementations.
-- **Api:** (**Planned**) Controllers, middleware, auth configuration; (**planned**) SignalR hub + background dispatcher after core green.
+- **Infrastructure:** ADO.NET repositories, DB initializer + demo seed, BCrypt password hashing, symmetric JWT token creation (`JwtTokenService`).
+- **Api:** (**Partial**) JWT bearer + DB initializer on startup + minimal probe endpoint; controllers/FluentValidation/correlation + exception middleware and SignalR still planned.
 
 **Dependency rule:** inner layers do not depend on outer layers; Infrastructure implements interfaces defined in Application.
 
@@ -91,7 +91,7 @@ See **`docs/architecture.md`** for **current vs planned** status and sequence di
 
 - Clean Architecture boundaries and **why** Infrastructure references Application.
 - **Task ownership:** every task operation filtered by authenticated **`UserId`** at persistence boundary.
-- **Security:** parameterized SQL only; JWT when implemented; password hashing via Infrastructure.
+- **Security:** parameterized SQL only; JWT bearer configured at startup; password hashing via Infrastructure (BCrypt).
 - **Testing pyramid:** unit coverage for rules now; integration tests next for pipeline + DB + auth.
 
 ---

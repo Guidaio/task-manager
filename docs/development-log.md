@@ -105,3 +105,47 @@ Expand and align project documentation with submission expectations before imple
 ### AI involvement
 
 Cursor drafted documentation revisions based on a structured reviewer checklist from the human collaborator.
+
+## 2026-05-09 — Step 3: Infrastructure (ADO.NET), database initializer, seed, JWT issuance
+
+### What was requested
+
+Implement the Infrastructure layer: parameterized ADO.NET repositories, optional master connection for database creation, schema initializer, demo seed user/tasks, BCrypt password hashing, JWT token signing (`JwtTokenService`), dependency injection (`AddInfrastructure`), API startup wiring with JWT bearer validation (controllers still deferred).
+
+### What was generated/changed
+
+- **Packages:** `Microsoft.Data.SqlClient`, BCrypt, JWT/token packages on Infrastructure; `Microsoft.AspNetCore.Authentication.JwtBearer` on Api.
+- **Options:** `DatabaseOptions`, `JwtOptions`; connection strings and JWT settings in `appsettings*.json` (Development aligned with Docker Compose SA password).
+- **Data:** `IDbConnectionFactory`, `SqlConnectionFactory`.
+- **Persistence:** `UserRepository`, `TaskRepository`, `NotificationRepository`, `DatabaseInitializer` (tables `Users`, `TaskItems`, `Notifications`; indexes; FKs).
+- **Seed:** `DemoSeed` constants; inserts demo user and two tasks when absent.
+- **Security:** `PasswordHasher`, `JwtTokenService`.
+- **Composition:** `DependencyInjection.AddInfrastructure` registers repositories, services, initializer.
+- **Api:** `Program.cs` runs initializer on startup, enables authentication/authorization middleware; minimal `/` health-style JSON until controllers exist.
+- **Docs/README:** `README.md` demo credentials + `dotnet run`; `docs/architecture.md` status table updated for honesty.
+
+### Technical decisions
+
+- **Parameterized SQL only** in repositories; no string concatenation of user input.
+- **BCrypt** for password hashing (assignment forbids EF/Dapper/MediatR, not BCrypt).
+- **Symmetric JWT (HS256)** with configurable signing key length guard (minimum 32 UTF-8 bytes).
+- **Database creation** optional via `MasterConnectionString`; catalog name taken from application connection string builder.
+
+### Validation performed
+
+- `dotnet build backend/TaskManager.sln` — 0 warnings, 0 errors.
+- `dotnet test backend/TaskManager.sln` — 8 unit tests passed; integration tests still absent.
+- Manual review: no EF Core / Dapper / MediatR package references added.
+
+### Issues / TODO
+
+- HTTP controllers (auth/register/login, tasks CRUD, health), FluentValidation, exception/correlation middleware, integration tests, Angular, SignalR remain future steps.
+
+### AI involvement
+
+Cursor implemented the Infrastructure and startup wiring described above.
+
+## 2026-05-09 — Session checkpoint note (before PC restart)
+
+Added `docs/session-checkpoint.md`: Step 3 remains **uncommitted** until local Docker + `dotnet run` verification; lists resume steps, suggested commit message, and Step 4 pointer. Solution builds clean (`dotnet build`) at time of note.
+
