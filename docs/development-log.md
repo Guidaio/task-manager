@@ -47,6 +47,10 @@ The skeleton keeps the planned Clean Architecture boundaries visible before impl
 
 Cursor helped create the Step 1 skeleton documentation and repository support files based on the approved plan and the user's scope clarification.
 
+### Historical clarification (Step 1 Issues / TODO)
+
+The **Issues / TODO** list under Step 1 is a **historical snapshot** of what was intentionally deferred **at the end of Step 1** only. It is **partially superseded** by later work: **Step 2** implemented Domain, Application, and unit tests (see the Step 2 entry below). As of Step 2, items such as **Infrastructure**, **API** (including JWT HTTP wiring), **database initializer**, **Angular**, **SignalR**, and **integration tests** were still outstanding unless a later log entry states otherwise.
+
 ## 2026-05-09 — Step 2: Domain and Application with unit tests
 
 ### What was requested
@@ -79,3 +83,25 @@ Implement Domain entities and enums, Application DTOs and abstractions, `AuthSer
 ### AI involvement
 
 Cursor implemented the Domain/Application layers and unit tests described above.
+
+## 2026-05-09 — Documentation revision (technical test alignment)
+
+### What was requested
+
+Expand and align project documentation with submission expectations before implementing further product features: AI usage audit depth, architecture honesty about planned vs implemented, presentation outline completeness, design rationale gaps, and a historical clarification on Step 1 TODOs.
+
+### What was generated/changed
+
+- Rewrote and expanded `docs/ai-usage.md` with Step 1/Step 2 context, validation narrative, corrections (`TaskItemStatus`, `Result`), forbidden-deps checklist commands, and planned JWT/SignalR validation notes.
+- Expanded `docs/architecture.md` with **Current implementation status**, planned auth/data/notification flows (diagrams), and careful wording not to overstate implementation.
+- Expanded `docs/presentation.md` with overview, architecture/testing summaries, GenAI summary pointer, trade-offs, future improvements.
+- Expanded `docs/design-decisions.md` with JWT, FluentValidation, controllers, Result modeling, test tooling, Docker, SignalR stack rationale.
+- Added historical clarification under Step 1 in `docs/development-log.md` regarding superseded TODOs.
+
+### Validation performed
+
+- Manual editorial review for consistency across docs (English-only, aligned with current code reality).
+
+### AI involvement
+
+Cursor drafted documentation revisions based on a structured reviewer checklist from the human collaborator.
