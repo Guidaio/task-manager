@@ -46,3 +46,36 @@ The skeleton keeps the planned Clean Architecture boundaries visible before impl
 ### AI involvement
 
 Cursor helped create the Step 1 skeleton documentation and repository support files based on the approved plan and the user's scope clarification.
+
+## 2026-05-09 — Step 2: Domain and Application with unit tests
+
+### What was requested
+
+Implement Domain entities and enums, Application DTOs and abstractions, `AuthService` and `TaskService` business logic, and focused unit tests using Moq. No Infrastructure, API endpoints, Angular, or SignalR yet.
+
+### What was generated/changed
+
+- Domain: `User`, `TaskItem`, `Notification`, `TaskItemStatus`, `NotificationType`.
+- Application: `Result`/`Result<T>`, auth and task DTOs, repository/token/password contracts, `IAuthService`/`ITaskService`, `INotificationRepository`, `AuthService`, `TaskService`.
+- Unit tests: `AuthServiceTests`, `TaskServiceTests` with Moq; removed placeholder `UnitTest1.cs`.
+- Added Moq package reference to `TaskManager.UnitTests`.
+
+### Technical decisions
+
+- Application services return `Result` types so controllers can translate failures consistently later without throwing for expected validation failures.
+- Task writes validate title and guard against undefined enum values when deserialized from integers.
+- Enum renamed to `TaskItemStatus` to avoid clashing with `System.Threading.Tasks.TaskStatus`.
+
+### Validation performed
+
+- Ran `dotnet build backend/TaskManager.sln` with 0 warnings and 0 errors.
+- Ran `dotnet test backend/TaskManager.sln`; 8 unit tests passed (`TaskManager.UnitTests`). Integration test project has no tests yet.
+
+### Issues / TODO
+
+- Wire dependency injection, SQL repositories, JWT, and API controllers in subsequent steps.
+- Integration tests and Angular remain pending.
+
+### AI involvement
+
+Cursor implemented the Domain/Application layers and unit tests described above.

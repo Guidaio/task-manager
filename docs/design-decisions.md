@@ -27,3 +27,7 @@ Angular matches the selected frontend direction and demonstrates enterprise-styl
 ## SignalR After Core Green
 
 SignalR with `BackgroundService` and `Channel<T>` remains in scope, but it starts only after the core backend, authentication, CRUD, tests, SQL Server setup, and minimum README instructions are working.
+
+## Task status enum naming
+
+The domain uses `TaskItemStatus` rather than `TaskStatus` because `System.Threading.Tasks.TaskStatus` exists in the default implicit usings for modern SDK-style projects, which causes ambiguous type errors on entities like `TaskItem`.

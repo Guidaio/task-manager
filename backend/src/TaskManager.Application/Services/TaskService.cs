@@ -1,0 +1,143 @@
+using TaskManager.Application.Abstractions;
+using TaskManager.Application.Common;
+using TaskManager.Application.Dtos.Tasks;
+using TaskManager.Domain.Entities;
+using TaskManager.Domain.Enums;
+
+namespace TaskManager.Application.Services;
+
+public sealed class TaskService : ITaskService
+{
+    private readonly ITaskRepository _tasks;
+
+    public TaskService(ITaskRepository tasks)
+    {
+        _tasks = tasks;
+    }
+
+    public async Task<Result<TaskDto>> CreateAsync(Guid userId, CreateTaskRequest request, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (userId == Guid.Empty)
+            return Result<TaskDto>.Fail("User is required.");
+
+        var validation = ValidateTaskWrite(request.Title, request.Status);
+        if (validation is not null)
+            return Result<TaskDto>.Fail(validation);
+
+        var now = DateTime.UtcNow;
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Title = request.Title.Trim(),
+            Description = request.Description?.Trim(),
+            Status = request.Status,
+            DueDateUtc = request.DueDateUtc,
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now,
+        };
+
+        var created = await _tasks.CreateAsync(task, cancellationToken).ConfigureAwait(false);
+        return Result<TaskDto>.Ok(ToDto(created));
+    }
+
+    public async Task<Result<TaskDto>> GetByIdAsync(Guid userId, Guid taskId, CancellationToken cancellationToken)
+    {
+        if (userId == Guid.Empty)
+            return Result<TaskDto>.Fail("User is required.");
+
+        if (taskId == Guid.Empty)
+            return Result<TaskDto>.Fail("Task id is required.");
+
+        var task = await _tasks.GetByIdAndUserIdAsync(taskId, userId, cancellationToken).ConfigureAwait(false);
+        if (task is null)
+            return Result<TaskDto>.Fail("Task was not found.");
+
+        return Result<TaskDto>.Ok(ToDto(task));
+    }
+
+    public async Task<Result<IReadOnlyList<TaskDto>>> ListAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        if (userId == Guid.Empty)
+            return Result<IReadOnlyList<TaskDto>>.Fail("User is required.");
+
+        var items = await _tasks.ListByUserIdAsync(userId, cancellationToken).ConfigureAwait(false);
+        var dtos = items.Select(ToDto).ToArray();
+        return Result<IReadOnlyList<TaskDto>>.Ok(dtos);
+    }
+
+    public async Task<Result<TaskDto>> UpdateAsync(Guid userId, Guid taskId, UpdateTaskRequest request, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (userId == Guid.Empty)
+            return Result<TaskDto>.Fail("User is required.");
+
+        if (taskId == Guid.Empty)
+            return Result<TaskDto>.Fail("Task id is required.");
+
+        var validation = ValidateTaskWrite(request.Title, request.Status);
+        if (validation is not null)
+            return Result<TaskDto>.Fail(validation);
+
+        var existing = await _tasks.GetByIdAndUserIdAsync(taskId, userId, cancellationToken).ConfigureAwait(false);
+        if (existing is null)
+            return Result<TaskDto>.Fail("Task was not found.");
+
+        existing.Title = request.Title.Trim();
+        existing.Description = request.Description?.Trim();
+        existing.Status = request.Status;
+        existing.DueDateUtc = request.DueDateUtc;
+        existing.UpdatedAtUtc = DateTime.UtcNow;
+
+        var updated = await _tasks.UpdateAsync(existing, cancellationToken).ConfigureAwait(false);
+        if (!updated)
+            return Result<TaskDto>.Fail("Task could not be updated.");
+
+        return Result<TaskDto>.Ok(ToDto(existing));
+    }
+
+    public async Task<Result> DeleteAsync(Guid userId, Guid taskId, CancellationToken cancellationToken)
+    {
+        if (userId == Guid.Empty)
+            return Result.Fail("User is required.");
+
+        if (taskId == Guid.Empty)
+            return Result.Fail("Task id is required.");
+
+        var existing = await _tasks.GetByIdAndUserIdAsync(taskId, userId, cancellationToken).ConfigureAwait(false);
+        if (existing is null)
+            return Result.Fail("Task was not found.");
+
+        var deleted = await _tasks.DeleteAsync(taskId, userId, cancellationToken).ConfigureAwait(false);
+        if (!deleted)
+            return Result.Fail("Task could not be deleted.");
+
+        return Result.Ok();
+    }
+
+    private static string? ValidateTaskWrite(string title, TaskItemStatus status)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            return "Title is required.";
+
+        if (!Enum.IsDefined(status))
+            return "Invalid task status.";
+
+        return null;
+    }
+
+    private static TaskDto ToDto(TaskItem task) =>
+        new()
+        {
+            Id = task.Id,
+            Title = task.Title,
+            Description = task.Description,
+            Status = task.Status,
+            DueDateUtc = task.DueDateUtc,
+            CreatedAtUtc = task.CreatedAtUtc,
+            UpdatedAtUtc = task.UpdatedAtUtc,
+        };
+}
