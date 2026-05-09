@@ -139,6 +139,9 @@ Also inspect `*.csproj` files for `<PackageReference>` entries.
 |------|----------------|
 | Planning | Core-green checklist before SignalR/notifications. |
 | Step 2 | `TaskStatus` → `TaskItemStatus` to avoid BCL name clash. |
-| Step 3 | ADO.NET repositories, initializer + seed, BCrypt hashing, symmetric JWT issuance + bearer middleware wired at startup (HTTP endpoints still pending). |
+| Step 2 | Adopt `Result`/`Result<T>` for application-level failures. |
+| Step 3 | ADO.NET repositories, initializer + seed, BCrypt hashing, symmetric JWT issuance + bearer middleware wired at startup. |
+| Step 3 | Notifications FK to `TaskItems` uses **`ON DELETE NO ACTION`** to avoid SQL Server multiple cascade paths. |
+| Step 4 | REST API (auth + task CRUD), FluentValidation, correlation + exception middleware, CORS for Angular dev. |
 
 Further rows should be appended as the project evolves.

@@ -1,6 +1,11 @@
 using System.Text;
+using System.Text.Json.Serialization;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using TaskManager.Api.Middleware;
 using TaskManager.Infrastructure;
 using TaskManager.Infrastructure.Options;
 using TaskManager.Infrastructure.Persistence;
@@ -8,6 +13,27 @@ using TaskManager.Infrastructure.Persistence;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AngularDev", policy =>
+    {
+        var origins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>();
+        if (origins is { Length: > 0 })
+            policy.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod();
+        else
+            policy.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod();
+    });
+});
 
 var jwtSection = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
     ?? throw new InvalidOperationException("Jwt configuration section is missing.");
@@ -44,10 +70,16 @@ await using (var scope = app.Services.CreateAsyncScope())
     await initializer.InitializeAsync().ConfigureAwait(false);
 }
 
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseCors("AngularDev");
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/", () => Results.Ok(new { status = "Task Manager API", note = "Controllers will be added in the next milestone." }));
+app.MapControllers();
+
+app.MapGet("/", () => Results.Ok(new { status = "Task Manager API", docs = "See README for HTTP routes." }))
+    .AllowAnonymous();
 
 app.Run();
 

@@ -59,6 +59,23 @@ SignalR and notification work starts only after this checklist is complete:
 - Main integration tests pass.
 - README has minimum run instructions.
 
+## HTTP API (backend)
+
+Base URL: whatever port `dotnet run` prints (e.g. `http://localhost:5035`).
+
+| Method | Route | Auth |
+|--------|-------|------|
+| GET | `/api/health` | No |
+| POST | `/api/auth/register` | No |
+| POST | `/api/auth/login` | No |
+| GET | `/api/tasks` | Bearer JWT |
+| GET | `/api/tasks/{id}` | Bearer JWT |
+| POST | `/api/tasks` | Bearer JWT |
+| PUT | `/api/tasks/{id}` | Bearer JWT |
+| DELETE | `/api/tasks/{id}` | Bearer JWT |
+
+Send `Authorization: Bearer <token>` from `/api/auth/login` or register for task routes. Enum `status` values serialize as JSON strings (`Pending`, `InProgress`, ...).
+
 ## Demo Credentials
 
 After the database initializer runs (API startup with SQL Server available), a demo user is seeded if missing:

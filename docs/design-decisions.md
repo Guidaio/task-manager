@@ -30,6 +30,8 @@ Clean Architecture keeps business rules independent from HTTP and SQL Server det
 
 SQL Server is a natural fit for a .NET technical exercise. **ADO.NET** is required because Entity Framework, Dapper, and Mediator/MediatR are **explicitly forbidden** by the assignment. Plain SQL with **`Microsoft.Data.SqlClient`** keeps persistence transparent and review-friendly.
 
+**Referential integrity:** `Notifications.TaskId` references `TaskItems` with **`ON DELETE NO ACTION`** (not `SET NULL`) so SQL Server does not reject the schema due to **multiple cascade paths** (`Users` → `TaskItems` CASCADE plus `Users` → `Notifications` CASCADE).
+
 ## Angular
 
 Angular matches the selected frontend direction and demonstrates enterprise-style frontend patterns such as services, routing, guards, interceptors, and forms.

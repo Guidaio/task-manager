@@ -106,6 +106,39 @@ Expand and align project documentation with submission expectations before imple
 
 Cursor drafted documentation revisions based on a structured reviewer checklist from the human collaborator.
 
+## 2026-05-09 — Step 4: HTTP API (controllers, FluentValidation, middleware)
+
+### What was requested
+
+Expose REST endpoints for auth (register/login), health, and authenticated task CRUD; add FluentValidation for request models; add correlation ID and global exception middleware; enable CORS for the Angular dev origin.
+
+### What was generated/changed
+
+- **Controllers:** `AuthController` (`POST /api/auth/register`, `POST /api/auth/login`), `TasksController` (task CRUD under `/api/tasks` with `[Authorize]`), `HealthController` (`GET /api/health`).
+- **Validation:** FluentValidation validators for `RegisterRequest`, `LoginRequest`, `CreateTaskRequest`, `UpdateTaskRequest`; automatic validation enabled.
+- **Middleware:** `CorrelationIdMiddleware` (`X-Correlation-ID`), `ExceptionHandlingMiddleware` (JSON 500 body).
+- **API wiring:** JSON enums as strings; database initializer runs immediately after `WebApplication` build; CORS policy `AngularDev` from `Cors:Origins` or default `http://localhost:4200`.
+- **Docs:** `README.md` route table; `docs/architecture.md` status and auth/data sections updated to reflect implemented HTTP surface.
+
+### Technical decisions
+
+- Map Application-layer `Result` failures to HTTP statuses (e.g. duplicate email → **409**, login failure → **401**, missing task → **404**, delete success → **204**).
+- User id resolved from JWT `NameIdentifier` / `sub` claims via `ClaimsPrincipalExtensions.TryGetUserId`.
+- Removed FluentValidation clientside adapters registration (API-only).
+
+### Validation performed
+
+- `dotnet build backend/TaskManager.sln` — 0 warnings, 0 errors.
+- `dotnet test backend/TaskManager.sln` — 8 unit tests passed.
+
+### Issues / TODO
+
+- Integration tests (`WebApplicationFactory`), Angular SPA, SignalR/notifications, optional Swagger/OpenAPI remain future work.
+
+### AI involvement
+
+Cursor implemented Step 4 API layer and documentation updates described above.
+
 ## 2026-05-09 — Step 3: Infrastructure (ADO.NET), database initializer, seed, JWT issuance
 
 ### What was requested

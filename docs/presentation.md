@@ -7,7 +7,7 @@ Use this document as a **short speaker outline** for the technical demo and **co
 ## Project overview
 
 - **Purpose:** Full stack **Task Manager** for the Ballast Lane–style Senior .NET exercise: authenticated users manage **their own** tasks (CRUD), with clean layering, custom persistence (no EF/Dapper/MediatR), tests, and documented GenAI usage.
-- **Backend:** .NET 8, ASP.NET Core Web API (**Controllers** planned for HTTP surface), Clean Architecture, SQL Server, **ADO.NET**, JWT bearer **middleware + token issuance implemented**; register/login **HTTP endpoints still planned**.
+- **Backend:** .NET 8, ASP.NET Core Web API with **Controllers**, Clean Architecture, SQL Server, **ADO.NET**, **JWT** register/login + protected task routes, FluentValidation on requests.
 - **Frontend:** Angular SPA (**planned**): login/register, task CRUD, responsive UI, JWT interceptor, SignalR client for notifications (**after core green**).
 - **Docs:** README runbook, architecture/design/AI logs, development log per milestone.
 
@@ -24,7 +24,7 @@ As an **authenticated user**, I want to **manage my tasks**, so I can track what
 - **Domain:** Entities and enums (`User`, `TaskItem`, `Notification`, `TaskItemStatus`, …).
 - **Application:** Use cases (`AuthService`, `TaskService`), DTOs, repository/token/password **interfaces**, **`Result`/`Result<T>`** for expected failures.
 - **Infrastructure:** ADO.NET repositories, DB initializer + demo seed, BCrypt password hashing, symmetric JWT token creation (`JwtTokenService`).
-- **Api:** (**Partial**) JWT bearer + DB initializer on startup + minimal probe endpoint; controllers/FluentValidation/correlation + exception middleware and SignalR still planned.
+- **Api:** REST controllers, FluentValidation, JWT bearer, correlation + exception middleware; SignalR still planned after core green.
 
 **Dependency rule:** inner layers do not depend on outer layers; Infrastructure implements interfaces defined in Application.
 
@@ -35,7 +35,7 @@ See **`docs/architecture.md`** for **current vs planned** status and sequence di
 ## Main flows (demo script)
 
 1. Register a user.
-2. Log in and receive a JWT (**once API/JWT are implemented**).
+2. Log in and receive a JWT via **`POST /api/auth/login`** (or register first).
 3. Create a task.
 4. List tasks — **only** current user’s tasks.
 5. Update and delete a task.
@@ -83,7 +83,7 @@ See **`docs/architecture.md`** for **current vs planned** status and sequence di
 - OpenAPI/Swagger for reviewer ergonomics.
 - Replace in-memory notification channel with **durable queue** (Azure Service Bus, RabbitMQ) for production parity.
 - Refresh tokens or shorter-lived access tokens + rotation policy.
-- Structured logging + correlation IDs across API and background worker (**middleware partially planned**).
+- Structured logging + **distributed tracing** (beyond inbound **`X-Correlation-ID`** and JSON exception payloads today).
 
 ---
 
