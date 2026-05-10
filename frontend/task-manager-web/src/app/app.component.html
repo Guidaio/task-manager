@@ -5,6 +5,24 @@
   <nav class="nav">
     @if (tokenStore.token()) {
       <span class="user">{{ tokenStore.auth()?.name }}</span>
+      <button
+        type="button"
+        class="notif-bell"
+        (click)="center.toggleDrawer()"
+        [attr.aria-expanded]="center.drawerOpen()"
+        aria-controls="notification-panel"
+        aria-label="Notifications"
+      >
+        <svg class="bell-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+          />
+        </svg>
+        @if (center.unreadCount() > 0) {
+          <span class="notif-badge">{{ badgeText(center.unreadCount()) }}</span>
+        }
+      </button>
       <a routerLink="/tasks">Tasks</a>
       <button type="button" class="ghost" (click)="logout()">Logout</button>
     } @else {
@@ -17,6 +35,38 @@
 <main class="main">
   <router-outlet />
 </main>
+
+@if (center.drawerOpen()) {
+  <div class="drawer-overlay" (click)="center.closeDrawer()"></div>
+  <aside id="notification-panel" class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="notif-drawer-title">
+    <div class="drawer-header">
+      <h2 id="notif-drawer-title">Notifications</h2>
+      <button type="button" class="drawer-close" (click)="center.closeDrawer()" aria-label="Close notifications">×</button>
+    </div>
+    @if (center.loading()) {
+      <p class="drawer-muted">Loading…</p>
+    } @else if (center.loadError()) {
+      <p class="drawer-error" role="alert">{{ center.loadError() }}</p>
+    } @else if (center.items().length === 0) {
+      <p class="drawer-muted">No notifications yet.</p>
+    } @else {
+      <ul class="notif-list">
+        @for (n of center.items(); track n.id) {
+          <li
+            class="notif-row"
+            [class.notif-row-new]="center.isHighlighted(n)"
+            [class.notif-row-old]="!center.isHighlighted(n)"
+            (mouseenter)="center.markRead(n.id)"
+          >
+            <span [class]="'notif-type notif-type-' + n.type.toLowerCase()">{{ n.type }}</span>
+            <p class="notif-msg">{{ n.message }}</p>
+            <time class="notif-time">{{ n.createdAtUtc | date: 'short' }}</time>
+          </li>
+        }
+      </ul>
+    }
+  </aside>
+}
 
 <div class="toast-stack" aria-live="polite" aria-atomic="false">
   @for (t of realtime.toasts(); track t.id) {

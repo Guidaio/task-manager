@@ -1,7 +1,9 @@
-import { Injectable, effect, inject, signal } from '@angular/core';
+import { Injectable, NgZone, effect, inject, signal } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 import { AuthTokenStore } from '../auth/auth-token.store';
+import { NotificationCenterService } from '../notifications/notification-center.service';
+import type { NotificationPayload } from '../notifications/notification.models';
 
 export interface ToastMessage {
   id: string;
@@ -9,18 +11,11 @@ export interface ToastMessage {
   type: 'info' | 'success' | 'warning';
 }
 
-export interface NotificationPayload {
-  id: string;
-  taskId: string | null;
-  message: string;
-  type: string;
-  isRead: boolean;
-  createdAtUtc: string;
-}
-
 @Injectable({ providedIn: 'root' })
 export class SignalRNotificationsService {
   private readonly tokenStore = inject(AuthTokenStore);
+  private readonly zone = inject(NgZone);
+  private readonly notificationCenter = inject(NotificationCenterService);
   private hub: HubConnection | null = null;
   private starting: Promise<void> | null = null;
 
@@ -46,6 +41,24 @@ export class SignalRNotificationsService {
     if (s === 'success') return 'success';
     if (s === 'warning') return 'warning';
     return 'info';
+  }
+
+  private normalizePayload(raw: unknown): NotificationPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const p = raw as Record<string, unknown>;
+    const id = p['id'] ?? p['Id'];
+    const message = p['message'] ?? p['Message'];
+    const type = p['type'] ?? p['Type'];
+    if (id == null || message == null) return null;
+    const taskRaw = p['taskId'] ?? p['TaskId'];
+    return {
+      id: String(id),
+      message: String(message),
+      type: type != null ? String(type) : 'Info',
+      taskId: taskRaw == null || taskRaw === undefined ? null : String(taskRaw),
+      isRead: Boolean(p['isRead'] ?? p['IsRead']),
+      createdAtUtc: String(p['createdAtUtc'] ?? p['CreatedAtUtc'] ?? ''),
+    };
   }
 
   private addToast(payload: NotificationPayload): void {
@@ -87,8 +100,16 @@ export class SignalRNotificationsService {
       .withAutomaticReconnect()
       .build();
 
-    hub.on('notification', (payload: NotificationPayload) => {
-      this.addToast(payload);
+    hub.on('notification', (raw: unknown) => {
+      const payload = this.normalizePayload(raw);
+      if (!payload) {
+        console.warn('SignalR notification: unexpected payload shape', raw);
+        return;
+      }
+      this.zone.run(() => {
+        this.addToast(payload);
+        this.notificationCenter.applyRealtimePayload(payload);
+      });
     });
 
     this.hub = hub;

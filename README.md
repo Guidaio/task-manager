@@ -98,7 +98,7 @@ After the database initializer runs (API startup with SQL Server available), a d
 
 Fixed demo user id (for reference): `11111111-1111-1111-1111-111111111111`. Two sample tasks are seeded when that user has no tasks.
 
-## Minimum Run Instructions
+**Full dev reference** (SQL `sa`, ports, JWT, SignalR, quick checklist): see [`docs/credentials-reference.md`](docs/credentials-reference.md).
 
 Start SQL Server:
 
@@ -143,6 +143,7 @@ Browse `http://localhost:4200`. CORS allows this origin against the API.
 
 ## Documentation
 
+- [`docs/credentials-reference.md`](docs/credentials-reference.md) — local URLs, demo user, SQL, JWT (dev)
 - `docs/architecture.md`
 - `docs/design-decisions.md`
 - `docs/ai-usage.md`
