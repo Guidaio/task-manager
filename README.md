@@ -81,7 +81,7 @@ Task create/update/delete enqueue notifications that are stored in SQL and pushe
 
 ### Realtime (SignalR)
 
-Connect to **`/hubs/notifications`** with the same JWT used for the API. Browsers cannot attach `Authorization` headers to the WebSocket upgrade, so the client sends the token via the **`access_token`** query parameter (the ASP.NET JWT bearer handler is configured to read it for that path). The Angular app uses `@microsoft/signalr` with `accessTokenFactory` and shows in-app toasts for each `notification` payload.
+Connect to **`/hubs/notifications`** with the same JWT used for the API. Browsers cannot attach `Authorization` headers to the WebSocket upgrade, so the client sends the token via the **`access_token`** query parameter (the ASP.NET JWT bearer handler is configured to read it for that path). The Angular app uses `@microsoft/signalr` with `accessTokenFactory`, shows **in-app toasts**, and keeps a **notification center** (bell + slide-out list merged with `GET /api/notifications`).
 
 ### Swagger / OpenAPI (Development)
 
@@ -143,6 +143,7 @@ Browse `http://localhost:4200`. CORS allows this origin against the API.
 
 ## Documentation
 
+- [`docs/testing-and-requirements.md`](docs/testing-and-requirements.md) — requirements traceability, test inventory, forbidden-deps checks, known gaps
 - [`docs/credentials-reference.md`](docs/credentials-reference.md) — local URLs, demo user, SQL, JWT (dev)
 - `docs/architecture.md`
 - `docs/design-decisions.md`

@@ -1,6 +1,6 @@
 # Presentation Notes
 
-Use this document as a **short speaker outline** for the technical demo and **code review**. Pair it with `docs/architecture.md`, `docs/design-decisions.md`, and `docs/ai-usage.md` for depth.
+Use this document as a **short speaker outline** for the technical demo and **code review**. Pair it with `docs/architecture.md`, `docs/design-decisions.md`, `docs/ai-usage.md`, and `docs/testing-and-requirements.md` for depth.
 
 ---
 
@@ -8,8 +8,8 @@ Use this document as a **short speaker outline** for the technical demo and **co
 
 - **Purpose:** Full stack **Task Manager** for the Ballast Lane–style Senior .NET exercise: authenticated users manage **their own** tasks (CRUD), with clean layering, custom persistence (no EF/Dapper/MediatR), tests, and documented GenAI usage.
 - **Backend:** .NET 8, ASP.NET Core Web API with **Controllers**, Clean Architecture, SQL Server, **ADO.NET**, **JWT** register/login + protected task routes, FluentValidation on requests.
-- **Frontend:** Angular SPA (**planned**): login/register, task CRUD, responsive UI, JWT interceptor, SignalR client for notifications (**after core green**).
-- **Docs:** README runbook, architecture/design/AI logs, development log per milestone.
+- **Frontend:** Angular SPA: login/register, task CRUD, responsive UI, JWT interceptor, SignalR client (**toasts + notification center drawer** after task events).
+- **Docs:** README runbook, architecture/design/AI logs, development log per milestone, **testing/requirements traceability** (`docs/testing-and-requirements.md`).
 
 ---
 
@@ -24,11 +24,11 @@ As an **authenticated user**, I want to **manage my tasks**, so I can track what
 - **Domain:** Entities and enums (`User`, `TaskItem`, `Notification`, `TaskItemStatus`, …).
 - **Application:** Use cases (`AuthService`, `TaskService`), DTOs, repository/token/password **interfaces**, **`Result`/`Result<T>`** for expected failures.
 - **Infrastructure:** ADO.NET repositories, DB initializer + demo seed, BCrypt password hashing, symmetric JWT token creation (`JwtTokenService`).
-- **Api:** REST controllers, FluentValidation, JWT bearer, correlation + exception middleware; SignalR still planned after core green.
+- **Api:** REST controllers, FluentValidation, JWT bearer, correlation + exception middleware; **SignalR** notifications hub + camelCase JSON payloads for browser clients.
 
 **Dependency rule:** inner layers do not depend on outer layers; Infrastructure implements interfaces defined in Application.
 
-See **`docs/architecture.md`** for **current vs planned** status and sequence diagrams.
+See **`docs/architecture.md`** for implementation status and sequence diagrams.
 
 ---
 
@@ -40,7 +40,7 @@ See **`docs/architecture.md`** for **current vs planned** status and sequence di
 4. List tasks — **only** current user’s tasks.
 5. Update and delete a task.
 6. Call a protected endpoint **without** token → **401**.
-7. (**After core green**) Trigger task action → **real-time notification** in Angular.
+7. Trigger task create/update/delete → **real-time notification** (toast + optional bell/drawer history).
 
 ---
 
@@ -49,10 +49,10 @@ See **`docs/architecture.md`** for **current vs planned** status and sequence di
 | Layer | Goal |
 |--------|------|
 | **Unit tests** | Fast feedback on **application rules**: duplicate email, invalid credentials, empty title, invalid enum payload, not-found / wrong-user paths via mocked repositories (`Moq`). |
-| **Integration tests** (**planned**) | **`WebApplicationFactory`**: real HTTP pipeline + database (test container or local SQL), JWT issuance, **401** without token, happy-path CRUD, **user isolation** between two users. |
-| **Manual / smoke** | README checklist + browser: login/register, CRUD, notifications, **no relevant console errors**, forbidden-deps verification. |
+| **Integration tests** | **`WebApplicationFactory`**: real HTTP pipeline + database, JWT, **401** without token, task CRUD, **user isolation** between two users, notifications list + persisted row after task create. |
+| **Manual / smoke** | README checklist + browser: login/register, CRUD, notifications, **no relevant console errors**, forbidden-deps verification (see `docs/testing-and-requirements.md`). |
 
-**Today:** eight unit tests on Application services; **no** integration tests committed yet — say so honestly if asked.
+**Today:** eight unit tests on Application services; **twelve** integration tests on the HTTP + SQL stack. SignalR **delivery** to the browser remains a manual check (no Playwright/Cypress in-repo).
 
 ---
 
@@ -72,7 +72,7 @@ See **`docs/architecture.md`** for **current vs planned** status and sequence di
 |--------|---------|------|
 | ADO.NET vs ORM | Meets exercise constraint; explicit SQL | More boilerplate; manual mapping |
 | `Result` vs exceptions for validation | Predictable API mapping; easy unit testing | Slightly more ceremony than throwing |
-| SignalR after core green | Stable demo path; interview-safe sequencing | Real-time features arrive later |
+| SignalR after core green | Stable demo path; interview-safe sequencing | Real-time features ship after baseline CRUD — now **done** for this repo |
 | Angular vs lighter SPA | Aligns with enterprise full-stack profile | More setup than minimal vanilla |
 
 ---
@@ -92,7 +92,7 @@ See **`docs/architecture.md`** for **current vs planned** status and sequence di
 - Clean Architecture boundaries and **why** Infrastructure references Application.
 - **Task ownership:** every task operation filtered by authenticated **`UserId`** at persistence boundary.
 - **Security:** parameterized SQL only; JWT bearer configured at startup; password hashing via Infrastructure (BCrypt).
-- **Testing pyramid:** unit coverage for rules now; integration tests next for pipeline + DB + auth.
+- **Testing pyramid:** unit coverage for rules; integration tests for pipeline + DB + auth + notification persistence; manual check for WebSocket UX.
 
 ---
 
@@ -100,6 +100,6 @@ See **`docs/architecture.md`** for **current vs planned** status and sequence di
 
 - Frontend login/register.
 - Task list/create/edit/delete.
-- Notification received (**after SignalR phase**).
+- Notification received (toast and/or **notification center**).
 - No relevant browser console errors.
 - Forbidden dependencies check: no EF Core, no Dapper, no MediatR.

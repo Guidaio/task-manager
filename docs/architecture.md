@@ -18,10 +18,10 @@ This document distinguishes **what exists in code today** from **what is planned
 | **Infrastructure** (ADO.NET, repositories, DB initializer, seed, hashing, JWT issuance) | **Implemented** | `SqlConnectionFactory`, `UserRepository`, `TaskRepository`, `NotificationRepository`, `DatabaseInitializer` (schema + demo seed), `PasswordHasher` (BCrypt), `JwtTokenService` (HS256). Registered via `AddInfrastructure`. |
 | **API** (controllers, FluentValidation, middleware) | **Implemented** | `AuthController`, `TasksController`, `HealthController`; correlation + exception middleware; CORS policy `AngularDev` for Angular dev server; JWT on task routes. |
 | **JWT authentication** | **Implemented** | Bearer validation + token issuance; HTTP login/register expose JWT to clients. |
-| **Angular frontend** | **Planned** | Frontend folder placeholder only; SPA not scaffolded yet. |
-| **`SignalR` + `BackgroundService` + `Channel<T>`** | **Planned** | Deferred until **core green** per project rules; not implemented yet. |
+| **Angular frontend** | **Implemented** | SPA in `frontend/task-manager-web`: auth, task CRUD, SignalR client, toasts, notification center (drawer). |
+| **`SignalR` + `BackgroundService` + `Channel<T>`** | **Implemented** | Notifications hub, JWT via `access_token` query on negotiate; worker dispatches after task mutations; SQL persistence. |
 | Unit tests (Application) | **Implemented** | Eight tests targeting `AuthService` / `TaskService`. |
-| Integration tests (`WebApplicationFactory`) | **Planned** | Project exists; tests not written yet. |
+| Integration tests (`WebApplicationFactory`) | **Implemented** | Twelve tests: health, auth, tasks (including user isolation), notifications list + async persistence after task create. |
 
 ---
 
@@ -106,9 +106,9 @@ sequenceDiagram
 
 ---
 
-## Notification flow (planned)
+## Notification flow (implemented)
 
-**Status: planned** — starts only after **core green** (working CRUD + JWT + tests + README baseline).
+**Status: implemented** — task create/update/delete enqueue notification work; `BackgroundService` drains a channel and pushes to SignalR; Angular shows toasts and a notification drawer backed by `GET /api/notifications`.
 
 ```mermaid
 flowchart LR
@@ -139,13 +139,13 @@ flowchart LR
 1. Task mutation completes and persists.
 2. A notification message is enqueued (in-memory `Channel<T>`).
 3. A **BackgroundService** consumes the queue and pushes to the correct SignalR connection/group for the user.
-4. Angular displays toast/history.
+Angular displays **toasts** and a **notification center** (recent items from the API + realtime merge).
 
 ---
 
 ## Data access constraint (assignment)
 
-The exercise forbids Entity Framework, Dapper, and Mediator/MediatR. Persistence uses **plain ADO.NET** with parameterized SQL in **`TaskManager.Infrastructure`** once implemented.
+The exercise forbids Entity Framework, Dapper, and Mediator/MediatR. Persistence uses **plain ADO.NET** with parameterized SQL in **`TaskManager.Infrastructure`**.
 
 ---
 
@@ -164,4 +164,4 @@ The core is considered green when:
 - Main integration tests pass.
 - README has minimum run instructions.
 
-SignalR, background processing, and notification history start only after the core green checklist is complete.
+SignalR, background processing, and notification history were introduced **after** the core green checklist; that ordering is preserved in the development log.

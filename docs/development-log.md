@@ -204,3 +204,31 @@ Refresh **`docs/session-checkpoint.md`** so work can resume tomorrow with a clea
 
 Cursor updated the checkpoint document per user request to wrap the session for the day.
 
+## 2026-05-10 — Requirements traceability, forbidden-deps audit, doc refresh
+
+### What was requested
+
+Close out submission readiness: verify **forbidden dependencies** (no EF Core, Dapper, MediatR), add **test documentation** mapping exercise requirements to automated tests, align **architecture** and **presentation** docs with the implemented Angular + SignalR + integration test reality, and note sensible optional follow-ups without over-scoping.
+
+### What was generated/changed
+
+- **`docs/testing-and-requirements.md`:** consolidated requirement table (from README/presentation), full inventory of **8** unit + **12** integration tests with file references, manual/smoke gaps, repeatable forbidden-deps commands with **2026-05-10** grep/`dotnet list` results, optional CI / server-side read-note.
+- **`docs/architecture.md`:** status table updated (Angular, SignalR, integration tests **implemented**); notification section marked **implemented**; ADO.NET constraint wording fixed (“once implemented” removed).
+- **`docs/presentation.md`:** overview, API line, demo step 7, testing table, trade-offs row for SignalR, smoke checklist, and talking points updated to match current codebase.
+- **`README.md`:** Realtime paragraph mentions notification center; Documentation list links the new testing doc.
+
+### Validation performed
+
+- Searched all `backend/**/*.csproj` for `EntityFramework`, `Dapper`, `MediatR`: **no matches**.
+- `dotnet list TaskManager.sln package --include-transitive` filtered for EF/Dapper/MediatR: **no matches**.
+- `dotnet test backend/TaskManager.sln` — **20** tests passed (8 unit, 12 integration).
+
+### Issues / TODO
+
+- **Human:** run README final browser smoke (user-owned).
+- **Optional:** CI forbidden-package step; API to persist notification “read” if reviewers expect cross-session unread state.
+
+### AI involvement
+
+Cursor drafted the traceability document and updated related docs per the collaborator’s checklist; no product code changes in this entry.
+
