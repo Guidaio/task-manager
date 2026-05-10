@@ -1,42 +1,63 @@
-<header class="top">
-  <div class="brand">
-    <a routerLink="/tasks" class="logo" aria-label="BallastLane — Tasks">
-      <span class="logo-ballast">Ballast</span><span class="logo-lane">Lane</span>
-    </a>
-  </div>
-  <nav class="nav">
-    @if (tokenStore.token()) {
-      <span class="user">{{ tokenStore.auth()?.name }}</span>
-      <button
-        type="button"
-        class="notif-bell"
-        (click)="center.toggleDrawer()"
-        [attr.aria-expanded]="center.drawerOpen()"
-        aria-controls="notification-panel"
-        aria-label="Notifications"
-      >
-        <svg class="bell-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            fill="currentColor"
-            d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
-          />
-        </svg>
-        @if (center.unreadCount() > 0) {
-          <span class="notif-badge">{{ badgeText(center.unreadCount()) }}</span>
-        }
-      </button>
-      <a routerLink="/tasks">Tasks</a>
-      <button type="button" class="ghost" (click)="logout()">Logout</button>
-    } @else {
-      <a routerLink="/login">Login</a>
-      <a routerLink="/register" class="button primary">Register</a>
-    }
-  </nav>
-</header>
+<div class="app-shell">
+  <header class="top">
+    <div class="brand">
+      <a routerLink="/tasks" class="logo" aria-label="BallastLane — Tasks">
+        <span class="logo-ballast">Ballast</span><span class="logo-lane">Lane</span>
+      </a>
+    </div>
+    <nav class="nav" aria-label="Main">
+      @if (tokenStore.token()) {
+        <span class="user-display" role="status">
+          <span class="user-display-label">Signed in as</span>
+          <span class="user-display-name">{{ tokenStore.auth()?.name }}</span>
+        </span>
+        <div class="nav-actions">
+          <div class="nav-links-group">
+            <a
+              routerLink="/tasks"
+              routerLinkActive="nav-link-active"
+              [routerLinkActiveOptions]="{ exact: false }"
+              class="nav-link"
+              >Tasks</a>
+            <button type="button" class="nav-link" (click)="logout()">Logout</button>
+          </div>
+          <button
+            type="button"
+            class="notif-bell notif-bell--trail"
+            (click)="center.toggleDrawer()"
+            [attr.aria-expanded]="center.drawerOpen()"
+            aria-controls="notification-panel"
+            aria-label="Notifications"
+          >
+            <svg class="bell-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+              />
+            </svg>
+            @if (center.unreadCount() > 0) {
+              <span class="notif-badge">{{ badgeText(center.unreadCount()) }}</span>
+            }
+          </button>
+        </div>
+      } @else {
+        <div class="nav-actions nav-actions--guest">
+          <a routerLink="/login" class="nav-link">Login</a>
+          <a routerLink="/register" class="button primary">Register</a>
+        </div>
+      }
+    </nav>
+  </header>
 
-<main class="main">
-  <router-outlet />
-</main>
+  <main class="main">
+    <router-outlet />
+  </main>
+
+  <footer class="site-footer">
+    <p class="site-footer-title">BallastLane Task Manager</p>
+    <p class="site-footer-meta">Technical exercise · {{ footerYear }}</p>
+  </footer>
+</div>
 
 @if (center.drawerOpen()) {
   <div class="drawer-overlay" (click)="center.closeDrawer()"></div>

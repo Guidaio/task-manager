@@ -66,29 +66,29 @@ Paraphrased intent communicated to Cursor:
 
 ---
 
-## Planned areas — how AI-assisted work will be validated when implemented
+## Historical planning notes (early milestones)
 
-These are **not** fully implemented at the time of this writing; when they land, validation should include:
+During Step 1–2, documentation listed **validation ideas** for capabilities that had not been built yet (JWT HTTP wiring, SignalR, deep integration coverage). Those sections were **forward-looking checklists** for humans reviewing AI output—not a statement that the features were missing forever.
+
+## Current implementation — what shipped and how it is validated
+
+The items below are **implemented** in this repository. Validation combines **automated tests** and **developer-led manual smoke** (recorded in `docs/process-development-log.md`).
 
 ### Authentication and JWT
 
-- **Implement:** JWT bearer authentication, password hashing implementation, register/login endpoints, protected task routes.
-- **Validate:**
-  - Register returns success and persists user; duplicate email rejected.
-  - Login returns a JWT with expected claims (including user identifier used for scoping).
-  - Task endpoints return **401** without token and **200/201/etc.** with valid token.
-  - **User isolation:** User A cannot read/update/delete User B’s tasks (integration tests + manual API checks).
+- **Shipped:** JWT bearer authentication, BCrypt password hashing, `POST /api/auth/register` and `POST /api/auth/login`, JWT-protected task and notification routes, SignalR **`access_token`** query for browser negotiate.
+- **Validate (automated):** Integration tests cover register/login, **401** without token on protected routes, and **user isolation** on tasks (`backend/tests/TaskManager.IntegrationTests/`).
+- **Validate (manual, developer):** Swagger authorize flow; browser login/register; peer user cannot access another user’s tasks (spot-check alongside tests).
 
 ### SignalR and notifications
 
-- **Implement:** Hub, in-memory `Channel<T>` (or equivalent), `BackgroundService` dispatcher, optional notification persistence.
-- **Validate:**
-  - After task mutations, connected client receives notification within acceptable latency.
-  - Smoke test from Angular: connection, subscribe, receive message, no critical console errors.
+- **Shipped:** `NotificationsHub`, in-memory `Channel<T>`, `BackgroundService` dispatcher, SQL notification persistence, `GET /api/notifications`, **`POST /api/notifications/mark-read`**.
+- **Validate (automated):** Integration tests cover notification list, async row after task mutation, and **mark-read persistence** + list `isRead`.
+- **Validate (manual, developer):** Angular connection, toast/center updates after task CRUD, **no critical console errors**, mark-read survives refresh (see latest development-log entry).
 
 ### SQL / ADO.NET
 
-- **Validate:** All SQL uses **parameterized** commands (no string concatenation of user input); code review of Infrastructure repositories.
+- **Validate (ongoing):** Code review + grep for string-concat SQL; assignment forbids EF Core/Dapper/MediatR — see [Forbidden dependencies](#forbidden-dependencies-how-we-check).
 
 ---
 
@@ -143,5 +143,6 @@ Also inspect `*.csproj` files for `<PackageReference>` entries.
 | Step 3 | ADO.NET repositories, initializer + seed, BCrypt hashing, symmetric JWT issuance + bearer middleware wired at startup. |
 | Step 3 | Notifications FK to `TaskItems` uses **`ON DELETE NO ACTION`** to avoid SQL Server multiple cascade paths. |
 | Step 4 | REST API (auth + tasks + health), FluentValidation, correlation + exception middleware, CORS; **Swagger UI** at `/swagger` in Development with JWT bearer for Try-it-out. |
+| Later | Angular SPA, notifications REST + SignalR, notification mark-read, **13** integration tests (21 total with unit tests); **developer manual smoke** before submission (`docs/process-development-log.md`). |
 
 Further rows should be appended as the project evolves.

@@ -16,7 +16,7 @@ The project uses one repository with separate backend, frontend, and documentati
 
 We use **Controllers** rather than Minimal APIs as the primary HTTP surface because:
 
-- Endpoint grouping (`AuthController`, `TasksController`, `HealthController`) maps cleanly to the assignment’s CRUD and auth stories.
+- Endpoint grouping (`AuthController`, `TasksController`, `NotificationsController`, `HealthController`) maps cleanly to the assignment’s CRUD and auth stories.
 - `[Authorize]` and conventional verbs/readability match **enterprise-style APIs** often reviewed in Senior interviews.
 - The distinction between HTTP models and Application DTOs stays explicit.
 
@@ -36,7 +36,7 @@ SQL Server is a natural fit for a .NET technical exercise. **ADO.NET** is requir
 
 Angular matches the selected frontend direction and demonstrates enterprise-style frontend patterns such as services, routing, guards, interceptors, and forms.
 
-## JWT authentication (**planned wiring**)
+## JWT authentication (**implemented**)
 
 **JWT Bearer** is chosen because:
 
@@ -44,11 +44,11 @@ Angular matches the selected frontend direction and demonstrates enterprise-styl
 - Angular can attach tokens via an **HTTP interceptor** without server session state.
 - Claims carry a stable **user identifier** used to **scope all task operations**.
 
-Concrete ASP.NET authentication middleware, signing keys, and token lifetime policies are implemented in Infrastructure/API **after** the Domain/Application contracts exist.
+**Shipped in this repo:** symmetric JWT signing and validation (`JwtTokenService`, bearer middleware in `Program.cs`), register/login issuing tokens, `[Authorize]` on task and notification routes, and **`access_token`** query support on the SignalR negotiate path for browser clients.
 
-## FluentValidation (**planned on API layer**)
+## FluentValidation (**implemented on API layer**)
 
-**FluentValidation** validates **HTTP request models** (register/login/task payloads) so rules stay declarative and testable **without** leaking framework attributes into Application services.
+**FluentValidation** validates **HTTP request models** (register/login/task payloads) so rules stay declarative and testable **without** leaking framework attributes into Application services. Validators live under **`TaskManager.Api`** (e.g. `Validation/`), with automatic validation registered at startup.
 
 **Division of responsibility:**
 
@@ -68,8 +68,8 @@ Application services return **`Result`** / **`Result<T>`** for expected failures
 ## xUnit, Moq, and WebApplicationFactory
 
 - **xUnit:** Standard, CI-friendly test runner for .NET with good tooling defaults.
-- **Moq:** Isolates Application services from SQL/JWT while proving **business rules** quickly (Step 2 already uses Moq for repositories and collaborators).
-- **`WebApplicationFactory`:** (**planned**) Spins up the API **in-process** with a test configuration (including real SQL or test doubles) to validate middleware, JWT, routing, and ADO.NET repositories together — the highest-value checks after unit coverage.
+- **Moq:** Isolates Application services from SQL/JWT while proving **business rules** quickly (`TaskManager.UnitTests` mocks repositories and collaborators).
+- **`WebApplicationFactory`:** (**implemented** in `TaskManager.IntegrationTests`) Spins up the API **in-process** with test configuration and **real SQL Server** (see factory/setup and `docs/reference-testing-requirements.md`) to validate middleware, JWT, routing, and ADO.NET repositories together — **13** integration tests complement **8** unit tests.
 
 ## Docker Compose
 

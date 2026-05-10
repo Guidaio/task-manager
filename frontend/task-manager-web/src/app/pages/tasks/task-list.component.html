@@ -32,7 +32,7 @@
             <td>
               <a [routerLink]="[task.id]">{{ task.title }}</a>
             </td>
-            <td><span class="pill">{{ statusLabel(task.status) }}</span></td>
+            <td><span class="pill" [attr.data-status]="task.status">{{ statusLabel(task.status) }}</span></td>
             <td>{{ formatDate(task.dueDateUtc) }}</td>
             <td class="actions">
               <a [routerLink]="[task.id]" class="action-btn action-btn-edit">Edit</a>

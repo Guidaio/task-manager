@@ -1,0 +1,93 @@
+# CI: backend build + tests (SQL Server service), frontend build, forbidden-deps guard.
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  backend:
+    name: Backend (.NET)
+    runs-on: ubuntu-latest
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: TaskManager_dev_12345
+          MSSQL_PID: Developer
+        ports:
+          - 1433:1433
+        options: >-
+          --health-interval 10s
+          --health-timeout 10s
+          --health-retries 15
+          --health-start-period 60s
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P TaskManager_dev_12345 -C -Q 'SELECT 1' || exit 1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore backend/TaskManager.sln
+
+      - name: Forbidden dependencies (.csproj)
+        run: |
+          set -euo pipefail
+          if grep -rE --include='*.csproj' \
+            -e 'EntityFramework' \
+            -e 'Microsoft\.EntityFrameworkCore' \
+            -e 'Dapper' \
+            -e 'MediatR' \
+            -e 'Mediator\.' \
+            backend/; then
+            echo "::error::Forbidden package id or pattern found in a .csproj file."
+            exit 1
+          fi
+          echo "OK: no forbidden patterns in *.csproj"
+
+      - name: Forbidden dependencies (dotnet list)
+        run: |
+          set -euo pipefail
+          LIST=$(dotnet list backend/TaskManager.sln package --include-transitive)
+          if echo "$LIST" | grep -iE 'Microsoft\.EntityFrameworkCore|EntityFrameworkCore|\bDapper\b|\bMediatR\b|Mediator\.Abstractions|Mediator\.SourceGenerator'; then
+            echo "::error::Forbidden package reported by dotnet list (see lines above)."
+            exit 1
+          fi
+          echo "OK: dotnet list shows no forbidden packages"
+
+      - name: Build
+        run: dotnet build backend/TaskManager.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test backend/TaskManager.sln -c Release --no-build --verbosity normal
+
+  frontend:
+    name: Frontend (Angular)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/task-manager-web/package-lock.json
+
+      - name: Install
+        working-directory: frontend/task-manager-web
+        run: npm ci
+
+      - name: Build
+        working-directory: frontend/task-manager-web
+        run: npm run build

@@ -112,10 +112,37 @@ button.action-btn {
 
 .pill {
   display: inline-block;
-  padding: 0.15rem 0.5rem;
+  padding: 0.2rem 0.55rem;
   border-radius: 999px;
   font-size: 0.8rem;
-  background: color-mix(in srgb, var(--tm-accent) 18%, transparent);
+  font-weight: 600;
+  border: 1px solid var(--tm-border);
+  background: color-mix(in srgb, var(--tm-muted) 10%, var(--tm-surface));
+  color: var(--tm-text);
+}
+
+.pill[data-status='Pending'] {
+  background: color-mix(in srgb, #64748b 14%, var(--tm-surface));
+  color: #334155;
+  border-color: color-mix(in srgb, #64748b 28%, var(--tm-border));
+}
+
+.pill[data-status='InProgress'] {
+  background: color-mix(in srgb, var(--tm-brand-blue) 16%, var(--tm-surface));
+  color: var(--tm-brand-blue-dark);
+  border-color: color-mix(in srgb, var(--tm-brand-blue) 35%, var(--tm-border));
+}
+
+.pill[data-status='Completed'] {
+  background: color-mix(in srgb, #16a34a 14%, var(--tm-surface));
+  color: #14532d;
+  border-color: color-mix(in srgb, #16a34a 32%, var(--tm-border));
+}
+
+.pill[data-status='Cancelled'] {
+  background: color-mix(in srgb, var(--tm-danger) 12%, var(--tm-surface));
+  color: var(--tm-danger);
+  border-color: color-mix(in srgb, var(--tm-danger) 32%, var(--tm-border));
 }
 
 .empty {

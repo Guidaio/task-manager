@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, HostListener, inject } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/auth/auth.service';
 import { AuthTokenStore } from './core/auth/auth-token.store';
 import { NotificationCenterService } from './core/notifications/notification-center.service';
@@ -8,11 +8,13 @@ import { SignalRNotificationsService } from './core/realtime/signalr-notificatio
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, DatePipe],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, DatePipe],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
+  protected readonly footerYear = new Date().getFullYear();
+
   protected readonly tokenStore = inject(AuthTokenStore);
   protected readonly center = inject(NotificationCenterService);
   protected readonly realtime = inject(SignalRNotificationsService);

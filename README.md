@@ -16,6 +16,13 @@ The application will let authenticated users register, log in, and manage their 
 - xUnit
 - Docker Compose
 
+## Prerequisites
+
+- **.NET 8 SDK** (matches `net8.0` target in backend projects)
+- **Node.js** + **npm** (for the Angular app under `frontend/task-manager-web`)
+- **Docker Desktop** (or compatible engine) for **SQL Server** via Compose
+- **SQL Server** via **`docker compose`** (see below)—no standalone local instance required for the default dev path
+
 ## Restrictions
 
 This project must not use:
@@ -73,9 +80,10 @@ Base URL: whatever port `dotnet run` prints (e.g. `http://localhost:5035`).
 | POST | `/api/tasks` | Bearer JWT |
 | PUT | `/api/tasks/{id}` | Bearer JWT |
 | DELETE | `/api/tasks/{id}` | Bearer JWT |
+| GET | `/api/notifications` | Bearer JWT |
 | POST | `/api/notifications/mark-read` | Bearer JWT |
 
-Send `Authorization: Bearer <token>` from `/api/auth/login` or register for task routes. Enum `status` values serialize as JSON strings (`Pending`, `InProgress`, ...).
+Send `Authorization: Bearer <token>` from `/api/auth/login` or register for **protected** task and notification routes. Enum `status` values serialize as JSON strings (`Pending`, `InProgress`, ...).
 
 Task create/update/delete enqueue notifications that are stored in SQL and pushed to the signed-in user over SignalR (see below).
 
@@ -135,6 +143,8 @@ Browse `http://localhost:4200`. CORS allows this origin against the API.
 
 ## Final Smoke Test Checklist
 
+For a full **pre-submission** narrative (including **developer-reported** validation), see **`docs/final-project-review.md`** §10 and **`docs/process-development-log.md`** (latest entry). Quick local checks:
+
 - Frontend login/register.
 - Task list/create/edit/delete.
 - Notification received.
@@ -143,7 +153,7 @@ Browse `http://localhost:4200`. CORS allows this origin against the API.
 
 ## Documentation
 
-- [`docs/README.md`](docs/README.md) — index of all documentation files and naming convention
+- **CI** — on push/PR to `main` or `master`, [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs backend build/tests (with SQL Server service), frontend build, and forbidden-dependency checks.
 - [`docs/reference-testing-requirements.md`](docs/reference-testing-requirements.md) — requirements traceability, test inventory, forbidden-deps checks, known gaps
 - [`docs/reference-credentials.md`](docs/reference-credentials.md) — local URLs, demo user, SQL, JWT (dev)
 - [`docs/guide-architecture.md`](docs/guide-architecture.md)

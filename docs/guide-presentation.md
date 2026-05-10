@@ -49,10 +49,10 @@ See **`docs/guide-architecture.md`** for implementation status and sequence diag
 | Layer | Goal |
 |--------|------|
 | **Unit tests** | Fast feedback on **application rules**: duplicate email, invalid credentials, empty title, invalid enum payload, not-found / wrong-user paths via mocked repositories (`Moq`). |
-| **Integration tests** | **`WebApplicationFactory`**: real HTTP pipeline + database, JWT, **401** without token, task CRUD, **user isolation** between two users, notifications list + persisted row after task create. |
+| **Integration tests** | **`WebApplicationFactory`**: real HTTP pipeline + database, JWT, **401** without token, task CRUD, **user isolation** between two users, notifications list + persisted row after task create, **notification mark-read persistence**. |
 | **Manual / smoke** | README checklist + browser: login/register, CRUD, notifications, **no relevant console errors**, forbidden-deps verification (see `docs/reference-testing-requirements.md`). |
 
-**Today:** eight unit tests on Application services; **twelve** integration tests on the HTTP + SQL stack. SignalR **delivery** to the browser remains a manual check (no Playwright/Cypress in-repo).
+**Today:** **8** unit tests + **13** integration tests (**21** automated tests total). **SignalR delivery** to the browser is not covered by WebSocket-level integration tests; **the developer completed final manual smoke testing** (realtime toasts/center, mark-read after refresh, clean console) before submission—see `docs/process-development-log.md` (latest entry).
 
 ---
 
@@ -80,7 +80,7 @@ See **`docs/guide-architecture.md`** for implementation status and sequence diag
 ## Future improvements
 
 - CI pipeline: build, test, **forbidden package** guard (`dotnet list package` / grep).
-- OpenAPI/Swagger for reviewer ergonomics.
+- OpenAPI/Swagger is already available at **`/swagger`** in Development; further **production** work could add versioning, auth hardening, or published artifacts.
 - Replace in-memory notification channel with **durable queue** (Azure Service Bus, RabbitMQ) for production parity.
 - Refresh tokens or shorter-lived access tokens + rotation policy.
 - Structured logging + **distributed tracing** (beyond inbound **`X-Correlation-ID`** and JSON exception payloads today).
@@ -98,8 +98,11 @@ See **`docs/guide-architecture.md`** for implementation status and sequence diag
 
 ## Final smoke test checklist
 
+**Developer-completed (pre-submission):** The repository author ran final **manual** smoke testing locally (Docker SQL, API, Swagger, auth, task CRUD, user isolation, Angular flows, SignalR notifications, mark-read persistence, `dotnet test`, console check) and recorded it in `docs/process-development-log.md`. Reviewers may still repeat this list on their machine.
+
 - Frontend login/register.
 - Task list/create/edit/delete.
-- Notification received (toast and/or **notification center**).
+- Notification received (toast and/or **notification center**); mark-read survives refresh.
 - No relevant browser console errors.
 - Forbidden dependencies check: no EF Core, no Dapper, no MediatR.
+- Automated: `dotnet test .\backend\TaskManager.sln` (stop the API first if builds report file-lock / MSB3027 errors).

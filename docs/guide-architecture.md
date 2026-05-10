@@ -2,9 +2,9 @@
 
 ## Overview
 
-The project follows **Clean Architecture** with explicit separation between HTTP/API concerns, application business logic, domain concepts, and infrastructure (SQL Server access, auth token/password primitives, and eventual real-time notification plumbing).
+The project follows **Clean Architecture** with explicit separation between HTTP/API concerns, application business logic, domain concepts, and infrastructure (SQL Server access, auth token/password primitives, and **real-time notifications** via SignalR + background dispatch).
 
-This document distinguishes **what exists in code today** from **what is planned** so it does not overstate implementation status.
+This document emphasizes **what exists in code today**. Any **optional future** enhancements (CI, durable queues, etc.) live in presentation/design notes—not as “not yet built” features for items already shipped here.
 
 ---
 
@@ -16,12 +16,12 @@ This document distinguishes **what exists in code today** from **what is planned
 | **Domain** (entities, enums) | **Implemented** | `User`, `TaskItem`, `Notification`, `TaskItemStatus`, `NotificationType`. |
 | **Application** (services, DTOs, contracts, `Result`) | **Implemented** | `AuthService`, `TaskService`, repository/auth abstractions; unit tests cover core rules with mocks. |
 | **Infrastructure** (ADO.NET, repositories, DB initializer, seed, hashing, JWT issuance) | **Implemented** | `SqlConnectionFactory`, `UserRepository`, `TaskRepository`, `NotificationRepository`, `DatabaseInitializer` (schema + demo seed), `PasswordHasher` (BCrypt), `JwtTokenService` (HS256). Registered via `AddInfrastructure`. |
-| **API** (controllers, FluentValidation, middleware) | **Implemented** | `AuthController`, `TasksController`, `HealthController`; correlation + exception middleware; CORS policy `AngularDev` for Angular dev server; JWT on task routes. |
+| **API** (controllers, FluentValidation, middleware) | **Implemented** | `AuthController`, `TasksController`, `NotificationsController`, `HealthController`; correlation + exception middleware; CORS policy `AngularDev` for Angular dev server; JWT on task and notification routes. |
 | **JWT authentication** | **Implemented** | Bearer validation + token issuance; HTTP login/register expose JWT to clients. |
 | **Angular frontend** | **Implemented** | SPA in `frontend/task-manager-web`: auth, task CRUD, SignalR client, toasts, notification center (drawer). |
 | **`SignalR` + `BackgroundService` + `Channel<T>`** | **Implemented** | Notifications hub, JWT via `access_token` query on negotiate; worker dispatches after task mutations; SQL persistence. |
 | Unit tests (Application) | **Implemented** | Eight tests targeting `AuthService` / `TaskService`. |
-| Integration tests (`WebApplicationFactory`) | **Implemented** | Twelve tests: health, auth, tasks (including user isolation), notifications list + async persistence after task create. |
+| Integration tests (`WebApplicationFactory`) | **Implemented** | **Thirteen** tests: health, auth, tasks (including user isolation), notifications list + async persistence after task create + **mark-read persistence** (`Mark_read_persists_and_list_returns_isRead`). |
 
 ---
 
@@ -30,7 +30,7 @@ This document distinguishes **what exists in code today** from **what is planned
 - **`TaskManager.Domain`:** Entities, enums, and simple domain rules.
 - **`TaskManager.Application`:** Use cases, service implementations against interfaces, DTOs, repository/token/password contracts, validation-friendly results (`Result`).
 - **`TaskManager.Infrastructure`:** ADO.NET (`Microsoft.Data.SqlClient`), connection factory, repository implementations, password hashing and JWT token issuance **implementations**, database initializer and seed data.
-- **`TaskManager.Api`:** Controllers, middleware (exception handling, correlation ID), authentication/authorization configuration, SignalR hub mapping (when implemented), composition root (DI registration).
+- **`TaskManager.Api`:** Controllers, middleware (exception handling, correlation ID), authentication/authorization configuration, **SignalR hub mapping** (`/hubs/notifications`), composition root (DI registration).
 
 ---
 
@@ -99,10 +99,10 @@ sequenceDiagram
     Api->>App: Task operations scoped to UserId
 ```
 
-**Validation when implemented:**
+**Validated behavior (integration tests + manual API checks):**
 
 - Unauthorized requests to protected routes return **401**.
-- Token carries a stable **user identifier** used everywhere tasks are scoped.
+- Token carries a stable **user identifier** used everywhere tasks and notifications are scoped.
 
 ---
 

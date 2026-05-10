@@ -271,3 +271,22 @@ Consolidate the remaining **`starter-documents/`** folder (PDFs + DOCX) with the
 ### AI involvement
 
 Cursor moved tracked binaries with `git mv` and updated doc links.
+
+## 2026-05-10 — Pre-submission documentation alignment + developer validation log
+
+### What was requested
+
+Finalize submission-facing documentation: remove misleading **“planned”** wording for JWT, FluentValidation, **`WebApplicationFactory`**, SignalR, and related features that are already shipped; fix integration test counts (**13** integration, **21** total with **8** unit); add **`GET /api/notifications`** to the README route table and an explicit **prerequisites** list; align **`docs/process-ai-usage.md`** with **historical vs current** validation narrative; record **developer-performed** final manual smoke and **`dotnet test`** validation (not assistant-executed).
+
+### What was generated/changed
+
+- **`docs/guide-design-decisions.md`**, **`docs/guide-architecture.md`**, **`docs/guide-presentation.md`**, **`docs/process-ai-usage.md`**, **`docs/final-project-review.md`**, **`README.md`**, and this log — wording and checklists updated to match the codebase.
+- **`docs/final-project-review.md`** — §10 smoke items marked complete **as reported by the developer**; §7 clarifies assistant vs developer verification boundaries.
+
+### Validation performed (developer-owned)
+
+**Manual smoke (developer):** Docker SQL Server started successfully; backend API and database initialization OK; Swagger OK; user register/login OK; JWT-protected endpoints rejected unauthenticated calls; authenticated task CRUD OK; **user isolation** validated; frontend start OK; login/register and task CRUD from UI OK; **SignalR notifications** OK; **notification mark-read** persisted correctly; browser console had no relevant errors; **`dotnet test .\backend\TaskManager.sln`** run/checked by the developer as part of final validation.
+
+### AI involvement
+
+Cursor applied the documentation edits above per collaborator request; **no application code changes** were required for this pass.
