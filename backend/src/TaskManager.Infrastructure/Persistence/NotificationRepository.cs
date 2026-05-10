@@ -41,6 +41,20 @@ public sealed class NotificationRepository : INotificationRepository
         return notification;
     }
 
+    public async Task DetachTaskReferencesAsync(Guid taskId, CancellationToken cancellationToken)
+    {
+        await using var connection = _connections.CreateConnection();
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            UPDATE dbo.Notifications SET TaskId = NULL WHERE TaskId = @TaskId;
+            """;
+        command.Parameters.Add(new SqlParameter("@TaskId", SqlDbType.UniqueIdentifier) { Value = taskId });
+
+        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task<IReadOnlyList<Notification>> ListByUserIdAsync(Guid userId, CancellationToken cancellationToken)
     {
         await using var connection = _connections.CreateConnection();

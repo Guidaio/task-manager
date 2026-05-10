@@ -17,3 +17,12 @@
 <main class="main">
   <router-outlet />
 </main>
+
+<div class="toast-stack" aria-live="polite" aria-atomic="false">
+  @for (t of realtime.toasts(); track t.id) {
+    <div class="toast" [class.toast-success]="t.type === 'success'" [class.toast-warning]="t.type === 'warning'" [class.toast-info]="t.type === 'info'">
+      <button type="button" class="toast-close" (click)="realtime.dismiss(t.id)" aria-label="Dismiss">×</button>
+      <p>{{ t.message }}</p>
+    </div>
+  }
+</div>

@@ -1,6 +1,7 @@
 using TaskManager.Application.Abstractions;
 using TaskManager.Application.Common;
 using TaskManager.Application.Dtos.Tasks;
+using TaskManager.Application.Messaging;
 using TaskManager.Domain.Entities;
 using TaskManager.Domain.Enums;
 
@@ -9,10 +10,17 @@ namespace TaskManager.Application.Services;
 public sealed class TaskService : ITaskService
 {
     private readonly ITaskRepository _tasks;
+    private readonly INotificationPublisher _notifications;
+    private readonly INotificationRepository _notificationRepository;
 
-    public TaskService(ITaskRepository tasks)
+    public TaskService(
+        ITaskRepository tasks,
+        INotificationPublisher notifications,
+        INotificationRepository notificationRepository)
     {
         _tasks = tasks;
+        _notifications = notifications;
+        _notificationRepository = notificationRepository;
     }
 
     public async Task<Result<TaskDto>> CreateAsync(Guid userId, CreateTaskRequest request, CancellationToken cancellationToken)
@@ -40,6 +48,15 @@ public sealed class TaskService : ITaskService
         };
 
         var created = await _tasks.CreateAsync(task, cancellationToken).ConfigureAwait(false);
+        await _notifications
+            .PublishAsync(
+                new NotificationDispatchRequest(
+                    userId,
+                    created.Id,
+                    $"Task \"{created.Title}\" was created.",
+                    NotificationType.Success),
+                cancellationToken)
+            .ConfigureAwait(false);
         return Result<TaskDto>.Ok(ToDto(created));
     }
 
@@ -96,6 +113,16 @@ public sealed class TaskService : ITaskService
         if (!updated)
             return Result<TaskDto>.Fail("Task could not be updated.");
 
+        await _notifications
+            .PublishAsync(
+                new NotificationDispatchRequest(
+                    userId,
+                    existing.Id,
+                    $"Task \"{existing.Title}\" was updated.",
+                    NotificationType.Info),
+                cancellationToken)
+            .ConfigureAwait(false);
+
         return Result<TaskDto>.Ok(ToDto(existing));
     }
 
@@ -110,6 +137,20 @@ public sealed class TaskService : ITaskService
         var existing = await _tasks.GetByIdAndUserIdAsync(taskId, userId, cancellationToken).ConfigureAwait(false);
         if (existing is null)
             return Result.Fail("Task was not found.");
+
+        var title = existing.Title;
+        await _notificationRepository
+            .DetachTaskReferencesAsync(taskId, cancellationToken)
+            .ConfigureAwait(false);
+        await _notifications
+            .PublishAsync(
+                new NotificationDispatchRequest(
+                    userId,
+                    null,
+                    $"Task \"{title}\" was deleted.",
+                    NotificationType.Warning),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         var deleted = await _tasks.DeleteAsync(taskId, userId, cancellationToken).ConfigureAwait(false);
         if (!deleted)

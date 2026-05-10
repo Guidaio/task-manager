@@ -73,8 +73,15 @@ Base URL: whatever port `dotnet run` prints (e.g. `http://localhost:5035`).
 | POST | `/api/tasks` | Bearer JWT |
 | PUT | `/api/tasks/{id}` | Bearer JWT |
 | DELETE | `/api/tasks/{id}` | Bearer JWT |
+| GET | `/api/notifications` | Bearer JWT |
 
 Send `Authorization: Bearer <token>` from `/api/auth/login` or register for task routes. Enum `status` values serialize as JSON strings (`Pending`, `InProgress`, ...).
+
+Task create/update/delete enqueue notifications that are stored in SQL and pushed to the signed-in user over SignalR (see below).
+
+### Realtime (SignalR)
+
+Connect to **`/hubs/notifications`** with the same JWT used for the API. Browsers cannot attach `Authorization` headers to the WebSocket upgrade, so the client sends the token via the **`access_token`** query parameter (the ASP.NET JWT bearer handler is configured to read it for that path). The Angular app uses `@microsoft/signalr` with `accessTokenFactory` and shows in-app toasts for each `notification` payload.
 
 ### Swagger / OpenAPI (Development)
 

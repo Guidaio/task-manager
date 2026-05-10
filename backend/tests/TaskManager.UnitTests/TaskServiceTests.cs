@@ -1,6 +1,7 @@
 using Moq;
 using TaskManager.Application.Abstractions;
 using TaskManager.Application.Dtos.Tasks;
+using TaskManager.Application.Messaging;
 using TaskManager.Application.Services;
 using TaskManager.Domain.Entities;
 using TaskManager.Domain.Enums;
@@ -10,8 +11,19 @@ namespace TaskManager.UnitTests;
 public sealed class TaskServiceTests
 {
     private readonly Mock<ITaskRepository> _tasks = new();
+    private readonly Mock<INotificationPublisher> _notifications = new();
+    private readonly Mock<INotificationRepository> _notificationRepo = new();
 
-    private TaskService CreateSut() => new(_tasks.Object);
+    private TaskService CreateSut()
+    {
+        _notifications
+            .Setup(x => x.PublishAsync(It.IsAny<NotificationDispatchRequest>(), It.IsAny<CancellationToken>()))
+            .Returns(ValueTask.CompletedTask);
+        _notificationRepo
+            .Setup(x => x.DetachTaskReferencesAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        return new TaskService(_tasks.Object, _notifications.Object, _notificationRepo.Object);
+    }
 
     private static Guid UserId => Guid.Parse("11111111-1111-1111-1111-111111111111");
 
