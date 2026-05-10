@@ -2,7 +2,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../core/auth/auth.service';
+import { apiErrorMessage } from '../../core/http-api-error';
 
 @Component({
   selector: 'app-login',
@@ -34,19 +36,17 @@ export class LoginComponent {
     }
     this.loading.set(true);
     this.error.set(null);
-    this.auth.login(this.form.getRawValue()).subscribe({
-      next: () => {
-        const returnUrl = this.route.snapshot.queryParams['returnUrl'] ?? '/tasks';
-        void this.router.navigateByUrl(returnUrl);
-      },
-      error: (err: HttpErrorResponse) => {
-        const msg =
-          typeof err.error === 'object' && err.error && 'error' in err.error
-            ? String((err.error as { error?: string }).error)
-            : 'Login failed.';
-        this.error.set(msg);
-      },
-      complete: () => this.loading.set(false),
-    });
+    this.auth
+      .login(this.form.getRawValue())
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: () => {
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'] ?? '/tasks';
+          void this.router.navigateByUrl(returnUrl);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.error.set(apiErrorMessage(err, 'Login failed.'));
+        },
+      });
   }
 }

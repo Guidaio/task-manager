@@ -2,7 +2,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../core/auth/auth.service';
+import { apiErrorMessage } from '../../core/http-api-error';
 
 @Component({
   selector: 'app-register',
@@ -31,17 +33,16 @@ export class RegisterComponent {
     }
     this.loading.set(true);
     this.error.set(null);
-    this.auth.register(this.form.getRawValue()).subscribe({
-      next: () => void this.router.navigate(['/tasks']),
-      error: (err: HttpErrorResponse) => {
-        let msg = 'Registration failed.';
-        if (err.status === 409) msg = 'Email is already registered.';
-        else if (typeof err.error === 'object' && err.error && 'error' in err.error) {
-          msg = String((err.error as { error?: string }).error);
-        }
-        this.error.set(msg);
-      },
-      complete: () => this.loading.set(false),
-    });
+    this.auth
+      .register(this.form.getRawValue())
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: () => void this.router.navigate(['/tasks']),
+        error: (err: HttpErrorResponse) => {
+          let msg = apiErrorMessage(err, 'Registration failed.');
+          if (err.status === 409) msg = 'Email is already registered.';
+          this.error.set(msg);
+        },
+      });
   }
 }
