@@ -186,3 +186,21 @@ Cursor implemented the Infrastructure and startup wiring described above.
 
 Added `docs/session-checkpoint.md`: Step 3 remains **uncommitted** until local Docker + `dotnet run` verification; lists resume steps, suggested commit message, and Step 4 pointer. Solution builds clean (`dotnet build`) at time of note.
 
+## 2026-05-09 — End-of-day handoff
+
+### What was requested
+
+Refresh **`docs/session-checkpoint.md`** so work can resume tomorrow with a clear summary, git pointer, and next milestones.
+
+### What was generated/changed
+
+- **`docs/session-checkpoint.md`:** evening wrap (Steps 3–4 + Swagger on `master`, commit **`34d2aba`**), tomorrow startup steps, reminder that persistence is **ADO.NET only** (no EF/Dapper/MediatR), config vs hardcoded demo seed note.
+
+### Validation performed
+
+- `git status` — clean working tree before commit (aside from this documentation edit).
+
+### AI involvement
+
+Cursor updated the checkpoint document per user request to wrap the session for the day.
+
