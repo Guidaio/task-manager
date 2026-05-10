@@ -34,7 +34,11 @@ This project must not use:
 ## Repository Structure
 
 ```text
+.github/
+  workflows/
+    ci.yml
 backend/
+  Dockerfile
   TaskManager.sln
   src/
     TaskManager.Api/
@@ -46,10 +50,24 @@ backend/
     TaskManager.IntegrationTests/
 frontend/
   task-manager-web/
+    src/                    # application code (components, services, …)
+    public/
+    angular.json
+    package.json
+    tsconfig.json
+    tsconfig.app.json
+    tsconfig.spec.json      # Karma / unit-test compilation
 docs/
+  README.md                 # documentation index
+  brief/                    # exercise prompt (en/pt) + source/ (PDFs, DOCX)
+  guide-*.md                # architecture, design, presentation
+  reference-*.md            # credentials, testing, troubleshooting, security
+  process-*.md              # AI usage, development log
 docker-compose.yml
 README.md
 ```
+
+**Frontend tests:** The Angular app is wired for **Karma + Jasmine** (`npm run test` in `frontend/task-manager-web`, `angular.json` `test` target). Convention is **`src/**/*.spec.ts`** next to features. This repo does not include spec files yet; coverage today is **backend xUnit** (see `docs/reference-testing-requirements.md`).
 
 ## Core Green Checklist
 
@@ -155,10 +173,11 @@ docker run --rm -p 8080:8080 -e ASPNETCORE_ENVIRONMENT=Development -e Database__
 
 Defaults: **`ASPNETCORE_URLS=http://+:8080`**. See [`docs/reference-troubleshooting.md`](docs/reference-troubleshooting.md).
 
-Run the Angular client (expects API at `http://localhost:5035`; adjust `src/environments/environment.ts` if your port differs):
+Run the Angular client (expects API at `http://localhost:5035`; adjust `src/environments/environment.ts` if your port differs). **First time** (or after a clean clone), install dependencies then start:
 
 ```powershell
 cd .\frontend\task-manager-web
+npm install
 npm start
 ```
 

@@ -333,3 +333,25 @@ Commit and open a PR; reduce documentation to what the exercise needs; confirm p
 ### AI involvement
 
 Cursor applied removals/edits and prepared git commit + PR instructions.
+
+## 2026-05-10 — Auth redirect and task 404 UX
+
+### What was requested
+
+Polish before a new commit: avoid blocking login/register on SignalR; improve missing-task UX after manual isolation testing.
+
+### What was generated/changed
+
+- **Login / register:** Navigate immediately after auth succeeds; **`primeConnection()`** runs without gating navigation (fixes stuck sign-in when **`hub.start()`** hangs).
+- **Task edit load:** On **404**, redirect to **`/tasks`** with a flash message styled as an error banner.
+- **Task list:** Flash banners support **success** vs **error** via **`sessionStorage`** key **`taskManager.flashBanner`**.
+- **`angular.json`:** Production **`anyComponentStyle`** budgets relaxed slightly so `ng build` stays clean with current shell SCSS size.
+- **README / troubleshooting:** Earlier pass added **`npm install`** before **`npm start`** and Angular troubleshooting section.
+
+### Validation performed
+
+- **`npm run build`** (frontend). **`dotnet test`** requires stopping the API when DLL copy locks occur (MSB3027).
+
+### AI involvement
+
+Cursor implemented and smoke-checked the Angular changes.

@@ -40,7 +40,8 @@ export class RegisterComponent {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: () => {
-          void this.realtime.primeConnection().then(() => void this.router.navigate(['/tasks']));
+          void this.router.navigate(['/tasks']);
+          void this.realtime.primeConnection();
         },
         error: (err: HttpErrorResponse) => {
           let msg = apiErrorMessage(err, 'Registration failed.');

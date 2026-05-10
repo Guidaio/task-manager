@@ -21,12 +21,12 @@
     <span class="control-label">Per page</span>
     <select
       class="control-input"
-      [value]="pageSize()"
+      [value]="pageSize().toString()"
       (change)="onPageSizeChange($event)"
       aria-label="Tasks per page"
     >
       @for (n of pageSizeOptions; track n) {
-        <option [value]="n">{{ n }}</option>
+        <option [value]="n.toString()">{{ n }}</option>
       }
     </select>
   </label>
@@ -38,7 +38,14 @@
 </div>
 
 @if (flash()) {
-  <p class="banner success" role="status">{{ flash() }}</p>
+  <p
+    class="banner"
+    [class.success]="flashKind() === 'success'"
+    [class.error]="flashKind() === 'error'"
+    [attr.role]="flashKind() === 'error' ? 'alert' : 'status'"
+  >
+    {{ flash() }}
+  </p>
 }
 
 @if (error()) {

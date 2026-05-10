@@ -6,6 +6,7 @@ import type { TaskDto, TaskItemStatus } from '../../core/tasks/task.models';
 import { TasksService } from '../../core/tasks/tasks.service';
 
 const FLASH_KEY = 'taskManager.flash';
+const FLASH_BANNER_KEY = 'taskManager.flashBanner';
 
 function apiMessage(err: HttpErrorResponse, fallback: string): string {
   const body = err.error;
@@ -29,6 +30,7 @@ export class TaskListComponent {
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly flash = signal<string | null>(null);
+  protected readonly flashKind = signal<'success' | 'error'>('success');
   protected readonly totalCount = signal(0);
   protected readonly statusFilter = signal<TaskItemStatus | ''>('');
   protected readonly page = signal(1);
@@ -65,9 +67,15 @@ export class TaskListComponent {
     try {
       const msg = globalThis.sessionStorage?.getItem(FLASH_KEY);
       if (msg) {
+        const kind = globalThis.sessionStorage?.getItem(FLASH_BANNER_KEY);
+        this.flashKind.set(kind === 'error' ? 'error' : 'success');
         this.flash.set(msg);
         globalThis.sessionStorage?.removeItem(FLASH_KEY);
-        globalThis.setTimeout(() => this.flash.set(null), 5000);
+        globalThis.sessionStorage?.removeItem(FLASH_BANNER_KEY);
+        globalThis.setTimeout(() => {
+          this.flash.set(null);
+          this.flashKind.set('success');
+        }, 5000);
       }
     } catch {
       /* ignore */
