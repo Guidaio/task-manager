@@ -1,0 +1,133 @@
+:root {
+  --tm-bg: #f4f1ec;
+  --tm-surface: #ffffff;
+  --tm-text: #1c1917;
+  --tm-muted: #78716c;
+  --tm-border: #e7e5e4;
+  --tm-accent: #0d9488;
+  --tm-accent-hover: #0f766e;
+  --tm-danger: #b91c1c;
+  --tm-radius: 10px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    Ubuntu,
+    Cantarell,
+    'Noto Sans',
+    sans-serif;
+  background: var(--tm-bg);
+  color: var(--tm-text);
+  line-height: 1.5;
+}
+
+a {
+  color: var(--tm-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--tm-accent-hover);
+  text-decoration: underline;
+}
+
+input,
+textarea,
+select,
+button {
+  border-radius: 8px;
+  border: 1px solid var(--tm-border);
+  padding: 0.5rem 0.65rem;
+  background: var(--tm-surface);
+  color: inherit;
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tm-accent) 55%, transparent);
+  outline-offset: 1px;
+}
+
+button {
+  cursor: pointer;
+}
+
+button.primary,
+a.button.primary {
+  background: var(--tm-accent);
+  color: #fff;
+  border-color: transparent;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button.primary:hover:not(:disabled),
+a.button.primary:hover {
+  background: var(--tm-accent-hover);
+  text-decoration: none;
+}
+
+button.primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+button.ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--tm-muted);
+}
+
+button.ghost:hover {
+  background: color-mix(in srgb, var(--tm-border) 40%, transparent);
+  color: var(--tm-text);
+}
+
+.button {
+  border-radius: 8px;
+}
+
+.card {
+  background: var(--tm-surface);
+  border: 1px solid var(--tm-border);
+  border-radius: var(--tm-radius);
+  padding: 1.5rem;
+}
+
+.banner {
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.banner.error {
+  background: color-mix(in srgb, var(--tm-danger) 12%, transparent);
+  color: var(--tm-danger);
+  border: 1px solid color-mix(in srgb, var(--tm-danger) 35%, transparent);
+}
+
+.muted {
+  color: var(--tm-muted);
+}

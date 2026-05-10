@@ -1,0 +1,19 @@
+<header class="top">
+  <div class="brand">
+    <a routerLink="/tasks" class="logo">Task Manager</a>
+  </div>
+  <nav class="nav">
+    @if (tokenStore.token()) {
+      <span class="user">{{ tokenStore.auth()?.name }}</span>
+      <a routerLink="/tasks">Tasks</a>
+      <button type="button" class="ghost" (click)="logout()">Logout</button>
+    } @else {
+      <a routerLink="/login">Login</a>
+      <a routerLink="/register" class="button primary">Register</a>
+    }
+  </nav>
+</header>
+
+<main class="main">
+  <router-outlet />
+</main>

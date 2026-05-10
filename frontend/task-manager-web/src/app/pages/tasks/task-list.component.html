@@ -1,0 +1,42 @@
+<div class="toolbar">
+  <h1>Tasks</h1>
+  <a routerLink="new" class="button primary">New task</a>
+</div>
+
+@if (error()) {
+  <p class="banner error" role="alert">{{ error() }}</p>
+}
+
+@if (loading()) {
+  <p class="muted">Loading tasks…</p>
+} @else if (tasks().length === 0) {
+  <p class="muted empty">No tasks yet. Create one to get started.</p>
+} @else {
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Status</th>
+          <th>Due</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (task of tasks(); track task.id) {
+          <tr>
+            <td>
+              <a [routerLink]="[task.id]">{{ task.title }}</a>
+            </td>
+            <td><span class="pill">{{ statusLabel(task.status) }}</span></td>
+            <td>{{ formatDate(task.dueDateUtc) }}</td>
+            <td class="actions">
+              <a [routerLink]="[task.id]" class="link">Edit</a>
+              <button type="button" class="link danger" (click)="deleteTask(task)">Delete</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

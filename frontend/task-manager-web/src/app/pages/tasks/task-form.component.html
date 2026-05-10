@@ -1,0 +1,57 @@
+<a routerLink="/tasks" class="back">← Tasks</a>
+
+@if (isCreate()) {
+  <h1>New task</h1>
+} @else {
+  <h1>Edit task</h1>
+}
+
+@if (error()) {
+  <p class="banner error" role="alert">{{ error() }}</p>
+}
+
+@if (loading()) {
+  <p class="muted">Loading task…</p>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="submit()" class="card">
+    <label>
+      <span>Title</span>
+      <input type="text" formControlName="title" [disabled]="saving()" />
+    </label>
+    @if (form.controls.title.touched && form.controls.title.invalid) {
+      <p class="field-error">Title is required (max 500 characters).</p>
+    }
+
+    <label>
+      <span>Description</span>
+      <textarea rows="4" formControlName="description" [disabled]="saving()"></textarea>
+    </label>
+    @if (form.controls.description.touched && form.controls.description.invalid) {
+      <p class="field-error">Description is too long.</p>
+    }
+
+    <div class="row">
+      <label class="grow">
+        <span>Status</span>
+        <select formControlName="status" [disabled]="saving()">
+          @for (s of statuses; track s) {
+            <option [value]="s">{{ s }}</option>
+          }
+        </select>
+      </label>
+      <label class="grow">
+        <span>Due (optional)</span>
+        <input type="datetime-local" formControlName="dueLocal" [disabled]="saving()" />
+      </label>
+    </div>
+
+    <div class="actions">
+      @if (!isCreate()) {
+        <button type="button" class="danger" [disabled]="saving()" (click)="deleteTask()">Delete</button>
+      }
+      <button type="submit" class="primary" [disabled]="saving()">
+        {{ saving() ? 'Saving…' : isCreate() ? 'Create' : 'Save' }}
+      </button>
+    </div>
+  </form>
+}

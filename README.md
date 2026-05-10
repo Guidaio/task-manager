@@ -117,7 +117,14 @@ Run the API (Development profile uses `appsettings.Development.json`; requires S
 dotnet run --project .\backend\src\TaskManager.Api\TaskManager.Api.csproj
 ```
 
-Angular client scaffolding and controller-level HTTP endpoints will be added in subsequent milestones.
+Run the Angular client (expects API at `http://localhost:5035`; adjust `src/environments/environment.ts` if your port differs):
+
+```powershell
+cd .\frontend\task-manager-web
+npm start
+```
+
+Browse `http://localhost:4200`. CORS allows this origin against the API.
 
 ## Final Smoke Test Checklist
 

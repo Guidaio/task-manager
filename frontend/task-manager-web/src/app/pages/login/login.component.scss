@@ -1,0 +1,63 @@
+:host {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.card {
+  width: min(26rem, 100%);
+}
+
+h1 {
+  margin: 0 0 0.75rem;
+  font-size: 1.5rem;
+}
+
+.hint {
+  margin: 0 0 1.25rem;
+  font-size: 0.85rem;
+  color: var(--tm-muted);
+  line-height: 1.4;
+}
+
+code {
+  font-size: 0.8em;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+label span {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+}
+
+input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button.primary {
+  margin-top: 0.25rem;
+}
+
+.field-error {
+  margin: -0.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--tm-danger);
+}
+
+.footer {
+  margin-top: 1.25rem;
+  font-size: 0.9rem;
+  color: var(--tm-muted);
+}
+
+.footer a {
+  font-weight: 500;
+}
