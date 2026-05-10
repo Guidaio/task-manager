@@ -5,7 +5,7 @@ This file was introduced during Step 3 verification; content below reflects **cu
 ## Completed on `master`
 
 - **Step 3:** ADO.NET repositories, `DatabaseInitializer` (schema + demo seed), BCrypt hashing, JWT signing + bearer middleware. Notifications FK `FK_Notifications_TaskItems` uses **`ON DELETE NO ACTION`** to avoid SQL Server multiple cascade paths (instead of `SET NULL`).
-- **Step 4:** `POST /api/auth/register`, `POST /api/auth/login`, task CRUD under **`/api/tasks`** with JWT, **`GET /api/health`**, FluentValidation, **`X-Correlation-ID`** middleware, JSON exception middleware, CORS for Angular dev (`http://localhost:4200` by default).
+- **Step 4:** `POST /api/auth/register`, `POST /api/auth/login`, task CRUD under **`/api/tasks`** with JWT, **`GET /api/health`**, FluentValidation, **`X-Correlation-ID`** middleware, JSON exception middleware, CORS for Angular dev (`http://localhost:4200` by default). **Swagger UI** at **`/swagger`** when running in Development (JWT authorize for Try-it-out).
 
 See **`README.md`** (routes + demo user), **`docs/development-log.md`**, and **`docs/architecture.md`** for detail.
 

@@ -5,6 +5,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using TaskManager.Api.Middleware;
 using TaskManager.Infrastructure;
 using TaskManager.Infrastructure.Options;
@@ -62,6 +63,40 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSwaggerGen(options =>
+    {
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "Task Manager API",
+            Version = "v1",
+            Description = "Ballast Lane–style technical exercise API",
+        });
+
+        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Paste JWT only (Swagger sends `Bearer {token}`). Obtain via POST /api/auth/login.",
+        });
+
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" },
+                },
+                Array.Empty<string>()
+            },
+        });
+    });
+}
+
 var app = builder.Build();
 
 await using (var scope = app.Services.CreateAsyncScope())
@@ -73,12 +108,28 @@ await using (var scope = app.Services.CreateAsyncScope())
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseCors("AngularDev");
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Task Manager API v1");
+        options.RoutePrefix = "swagger";
+    });
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/", () => Results.Ok(new { status = "Task Manager API", docs = "See README for HTTP routes." }))
+app.MapGet("/", () => Results.Ok(new
+{
+    status = "Task Manager API",
+    swagger = "Development: browse /swagger for OpenAPI UI",
+    readme = "See README for HTTP routes.",
+}))
     .AllowAnonymous();
 
 app.Run();

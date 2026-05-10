@@ -142,6 +142,6 @@ Also inspect `*.csproj` files for `<PackageReference>` entries.
 | Step 2 | Adopt `Result`/`Result<T>` for application-level failures. |
 | Step 3 | ADO.NET repositories, initializer + seed, BCrypt hashing, symmetric JWT issuance + bearer middleware wired at startup. |
 | Step 3 | Notifications FK to `TaskItems` uses **`ON DELETE NO ACTION`** to avoid SQL Server multiple cascade paths. |
-| Step 4 | REST API (auth + task CRUD), FluentValidation, correlation + exception middleware, CORS for Angular dev. |
+| Step 4 | REST API (auth + tasks + health), FluentValidation, correlation + exception middleware, CORS; **Swagger UI** at `/swagger` in Development with JWT bearer for Try-it-out. |
 
 Further rows should be appended as the project evolves.

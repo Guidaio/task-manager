@@ -133,7 +133,11 @@ Expose REST endpoints for auth (register/login), health, and authenticated task 
 
 ### Issues / TODO
 
-- Integration tests (`WebApplicationFactory`), Angular SPA, SignalR/notifications, optional Swagger/OpenAPI remain future work.
+- Integration tests (`WebApplicationFactory`), Angular SPA, SignalR/notifications remain future work.
+
+### Amendment (Swagger UI)
+
+- Added **Swashbuckle.AspNetCore** — Swagger UI at **`/swagger`** when `ASPNETCORE_ENVIRONMENT=Development`, including JWT Bearer scheme for Try-it-out on `/api/tasks`.
 
 ### AI involvement
 

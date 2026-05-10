@@ -76,6 +76,10 @@ Base URL: whatever port `dotnet run` prints (e.g. `http://localhost:5035`).
 
 Send `Authorization: Bearer <token>` from `/api/auth/login` or register for task routes. Enum `status` values serialize as JSON strings (`Pending`, `InProgress`, ...).
 
+### Swagger / OpenAPI (Development)
+
+When `ASPNETCORE_ENVIRONMENT=Development`, browse **`/swagger`** for interactive docs. Click **Authorize**, paste the **JWT only** (no `Bearer ` prefix), then call protected `/api/tasks` endpoints.
+
 ## Demo Credentials
 
 After the database initializer runs (API startup with SQL Server available), a demo user is seeded if missing:
