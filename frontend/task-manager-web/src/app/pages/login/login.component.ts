@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../core/auth/auth.service';
 import { apiErrorMessage } from '../../core/http-api-error';
+import { SignalRNotificationsService } from '../../core/realtime/signalr-notifications.service';
 
 @Component({
   selector: 'app-login',
@@ -15,6 +16,7 @@ import { apiErrorMessage } from '../../core/http-api-error';
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
+  private readonly realtime = inject(SignalRNotificationsService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -41,8 +43,10 @@ export class LoginComponent {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: () => {
-          const returnUrl = this.route.snapshot.queryParams['returnUrl'] ?? '/tasks';
-          void this.router.navigateByUrl(returnUrl);
+          void this.realtime.primeConnection().then(() => {
+            const returnUrl = this.route.snapshot.queryParams['returnUrl'] ?? '/tasks';
+            void this.router.navigateByUrl(returnUrl);
+          });
         },
         error: (err: HttpErrorResponse) => {
           this.error.set(apiErrorMessage(err, 'Login failed.'));

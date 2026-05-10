@@ -128,6 +128,12 @@ button.ghost:hover {
   border: 1px solid color-mix(in srgb, var(--tm-danger) 35%, transparent);
 }
 
+.banner.success {
+  background: color-mix(in srgb, var(--tm-accent) 14%, transparent);
+  color: var(--tm-accent-hover);
+  border: 1px solid color-mix(in srgb, var(--tm-accent) 28%, transparent);
+}
+
 .muted {
   color: var(--tm-muted);
 }

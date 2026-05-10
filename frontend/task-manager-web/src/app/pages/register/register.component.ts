@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../core/auth/auth.service';
 import { apiErrorMessage } from '../../core/http-api-error';
+import { SignalRNotificationsService } from '../../core/realtime/signalr-notifications.service';
 
 @Component({
   selector: 'app-register',
@@ -15,6 +16,7 @@ import { apiErrorMessage } from '../../core/http-api-error';
 export class RegisterComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
+  private readonly realtime = inject(SignalRNotificationsService);
   private readonly router = inject(Router);
 
   protected readonly loading = signal(false);
@@ -37,7 +39,9 @@ export class RegisterComponent {
       .register(this.form.getRawValue())
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: () => void this.router.navigate(['/tasks']),
+        next: () => {
+          void this.realtime.primeConnection().then(() => void this.router.navigate(['/tasks']));
+        },
         error: (err: HttpErrorResponse) => {
           let msg = apiErrorMessage(err, 'Registration failed.');
           if (err.status === 409) msg = 'Email is already registered.';

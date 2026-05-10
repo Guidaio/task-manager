@@ -1,8 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { NotificationCenterService } from '../../core/notifications/notification-center.service';
 import type { TaskDto } from '../../core/tasks/task.models';
 import { TasksService } from '../../core/tasks/tasks.service';
+
+const FLASH_KEY = 'taskManager.flash';
 
 function apiMessage(err: HttpErrorResponse, fallback: string): string {
   const body = err.error;
@@ -20,13 +23,29 @@ function apiMessage(err: HttpErrorResponse, fallback: string): string {
 })
 export class TaskListComponent {
   private readonly tasksService = inject(TasksService);
+  private readonly notificationCenter = inject(NotificationCenterService);
 
   protected readonly tasks = signal<TaskDto[]>([]);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
+  protected readonly flash = signal<string | null>(null);
 
   constructor() {
+    this.consumeFlashFromStorage();
     this.reload();
+  }
+
+  private consumeFlashFromStorage(): void {
+    try {
+      const msg = globalThis.sessionStorage?.getItem(FLASH_KEY);
+      if (msg) {
+        this.flash.set(msg);
+        globalThis.sessionStorage?.removeItem(FLASH_KEY);
+        globalThis.setTimeout(() => this.flash.set(null), 5000);
+      }
+    } catch {
+      /* ignore */
+    }
   }
 
   protected reload(): void {
@@ -60,7 +79,10 @@ export class TaskListComponent {
     const ok = globalThis.confirm(`Delete “${task.title}”?`);
     if (!ok) return;
     this.tasksService.delete(task.id).subscribe({
-      next: () => this.reload(),
+      next: () => {
+        void this.notificationCenter.refreshFromApi();
+        this.reload();
+      },
       error: (err: HttpErrorResponse) => {
         this.error.set(apiMessage(err, 'Delete failed.'));
       },

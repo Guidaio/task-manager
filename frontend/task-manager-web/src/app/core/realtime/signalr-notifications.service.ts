@@ -32,6 +32,17 @@ export class SignalRNotificationsService {
     });
   }
 
+  /**
+   * Best-effort: connect as soon as the app boots with a stored token so tasks created
+   * right after load still receive the realtime push (avoids losing the first message).
+   */
+  primeConnection(): Promise<void> {
+    if (!this.tokenStore.token()) return Promise.resolve();
+    return this.ensureConnected().catch((e) => {
+      console.error('SignalR primeConnection failed', e);
+    });
+  }
+
   dismiss(id: string): void {
     this.toasts.update((list) => list.filter((t) => t.id !== id));
   }

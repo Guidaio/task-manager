@@ -4,8 +4,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, finalize } from 'rxjs/operators';
+import { NotificationCenterService } from '../../core/notifications/notification-center.service';
 import type { TaskItemStatus } from '../../core/tasks/task.models';
 import { TasksService } from '../../core/tasks/tasks.service';
+
+const FLASH_KEY = 'taskManager.flash';
 
 function apiMessage(err: HttpErrorResponse, fallback: string): string {
   const body = err.error;
@@ -43,6 +46,7 @@ export class TaskFormComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly notificationCenter = inject(NotificationCenterService);
 
   protected readonly statuses: TaskItemStatus[] = [
     'Pending',
@@ -137,7 +141,15 @@ export class TaskFormComponent {
         })
         .pipe(finalize(() => this.saving.set(false)))
         .subscribe({
-          next: (created) => void this.router.navigate(['/tasks', created.id]),
+          next: () => {
+            try {
+              globalThis.sessionStorage?.setItem(FLASH_KEY, 'Task created.');
+            } catch {
+              /* ignore private mode */
+            }
+            void this.notificationCenter.refreshFromApi();
+            void this.router.navigate(['/tasks']);
+          },
           error: (err: HttpErrorResponse) => this.error.set(apiMessage(err, 'Save failed.')),
         });
     } else if (this.taskId) {
@@ -150,7 +162,15 @@ export class TaskFormComponent {
         })
         .pipe(finalize(() => this.saving.set(false)))
         .subscribe({
-          next: () => void this.router.navigate(['/tasks']),
+          next: () => {
+            try {
+              globalThis.sessionStorage?.setItem(FLASH_KEY, 'Task updated.');
+            } catch {
+              /* ignore */
+            }
+            void this.notificationCenter.refreshFromApi();
+            void this.router.navigate(['/tasks']);
+          },
           error: (err: HttpErrorResponse) => this.error.set(apiMessage(err, 'Save failed.')),
         });
     }
@@ -162,7 +182,10 @@ export class TaskFormComponent {
     const ok = globalThis.confirm(`Delete “${title}”?`);
     if (!ok) return;
     this.tasksService.delete(this.taskId).subscribe({
-      next: () => void this.router.navigate(['/tasks']),
+      next: () => {
+        void this.notificationCenter.refreshFromApi();
+        void this.router.navigate(['/tasks']);
+      },
       error: (err: HttpErrorResponse) => this.error.set(apiMessage(err, 'Delete failed.')),
     });
   }

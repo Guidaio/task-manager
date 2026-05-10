@@ -3,6 +3,10 @@
   <a routerLink="new" class="button primary">New task</a>
 </div>
 
+@if (flash()) {
+  <p class="banner success" role="status">{{ flash() }}</p>
+}
+
 @if (error()) {
   <p class="banner error" role="alert">{{ error() }}</p>
 }
