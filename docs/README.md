@@ -1,30 +1,37 @@
 # Documentation index
 
-All project documentation lives under **`docs/`**, with a short naming convention:
+Documentation under **`docs/`** supports the Ballast Lane–style technical exercise: **architecture and decisions**, **GenAI disclosure**, **implementation log**, and **references** for local setup and validation.
 
-| Prefix | Purpose |
-|--------|---------|
-| **`guide-`** | Deep dives for reviewers and demos (architecture, decisions, presentation notes). |
-| **`reference-`** | Quick lookup (credentials, testing vs requirements). |
-| **`process-`** | How the work was done (AI usage, development log, session checkpoints). |
-| **`brief/`** | Exercise prompts (txt) + **official PDFs/DOCX** under `brief/source/` (see below). |
+The repository **[README.md](../README.md)** is the main **runbook** (build, run, smoke checklist).
 
-## Contents
+## Exercise prompts
+
+| Path | Description |
+|------|-------------|
+| [brief/ballast-lane-task-manager.en.txt](brief/ballast-lane-task-manager.en.txt) | Exercise specification (English). |
+| [brief/ballast-lane-task-manager.pt-BR.txt](brief/ballast-lane-task-manager.pt-BR.txt) | Same (Portuguese). |
+| [brief/source/](brief/source/) | Original PDF/DOCX materials supplied with the exercise. |
+
+## Guides (story, architecture, rationale, demo)
 
 | File | Description |
 |------|-------------|
-| [brief/ballast-lane-task-manager.en.txt](brief/ballast-lane-task-manager.en.txt) | Exercise specification (English). |
-| [brief/ballast-lane-task-manager.pt-BR.txt](brief/ballast-lane-task-manager.pt-BR.txt) | Exercise specification (Portuguese). |
-| [brief/source/ballast-lane-technical-exercise-v5.pdf](brief/source/ballast-lane-technical-exercise-v5.pdf) | Ballast Lane technical interview exercise (PDF). |
-| [brief/source/ballast-lane-job-description-senior-net.pdf](brief/source/ballast-lane-job-description-senior-net.pdf) | Senior .NET engineer role description (PDF). |
-| [brief/source/ballast-lane-design-thought-process.docx](brief/source/ballast-lane-design-thought-process.docx) | Early design / thought-process notes (DOCX). |
-| [guide-architecture.md](guide-architecture.md) | Clean Architecture status, diagrams, data and auth flows. |
-| [guide-design-decisions.md](guide-design-decisions.md) | Rationale (JWT, validation, ADO.NET, SignalR, etc.). |
-| [guide-presentation.md](guide-presentation.md) | Demo script and talking points. |
-| [reference-credentials.md](reference-credentials.md) | Local URLs, SQL, JWT, demo user, troubleshooting. |
-| [reference-testing-requirements.md](reference-testing-requirements.md) | Requirements traceability, test inventory, forbidden-deps checks. |
-| [process-ai-usage.md](process-ai-usage.md) | GenAI tools, prompts, validation, corrections. |
-| [process-development-log.md](process-development-log.md) | Milestone-by-milestone change log. |
-| [process-session-checkpoint.md](process-session-checkpoint.md) | Optional handoff snapshot (may be retired). |
+| [guide-architecture.md](guide-architecture.md) | Clean Architecture, layers, data and auth flows, implementation status. |
+| [guide-design-decisions.md](guide-design-decisions.md) | Rationale: ADO.NET, JWT, FluentValidation, `Result`, tests, SignalR sequencing, etc. |
+| [guide-presentation.md](guide-presentation.md) | Demo outline and interview talking points. |
 
-The repository **[README.md](../README.md)** is still the primary **runbook** (build, run, smoke checklist).
+## Process (planning and execution)
+
+| File | Description |
+|------|-------------|
+| [process-ai-usage.md](process-ai-usage.md) | GenAI tools, prompts (paraphrased), representative outputs, validation, corrections (exercise requirement). |
+| [process-development-log.md](process-development-log.md) | Chronological milestone log and what was validated. |
+
+## Reference (credentials, tests, operations)
+
+| File | Description |
+|------|-------------|
+| [reference-credentials.md](reference-credentials.md) | Local URLs, demo user, SQL/JWT notes for Development. |
+| [reference-testing-requirements.md](reference-testing-requirements.md) | Requirements ↔ tests traceability, test inventory, forbidden-deps checks. |
+| [reference-troubleshooting.md](reference-troubleshooting.md) | Docker/SQL, DB reset, MSB3027 locks, integration tests, optional API Docker image. |
+| [reference-security.md](reference-security.md) | Security topics at exercise scope (JWT, isolation, parameterized SQL, secrets). |

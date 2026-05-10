@@ -49,10 +49,10 @@ See **`docs/guide-architecture.md`** for implementation status and sequence diag
 | Layer | Goal |
 |--------|------|
 | **Unit tests** | Fast feedback on **application rules**: duplicate email, invalid credentials, empty title, invalid enum payload, not-found / wrong-user paths via mocked repositories (`Moq`). |
-| **Integration tests** | **`WebApplicationFactory`**: real HTTP pipeline + database, JWT, **401** without token, task CRUD, **user isolation** between two users, notifications list + persisted row after task create, **notification mark-read persistence**. |
+| **Integration tests** | **`WebApplicationFactory`**: real HTTP pipeline + database, JWT, **401** without token, task CRUD, **task list status filter + pagination**, **user isolation** between two users, notifications list + persisted row after task create, **notification mark-read persistence**. |
 | **Manual / smoke** | README checklist + browser: login/register, CRUD, notifications, **no relevant console errors**, forbidden-deps verification (see `docs/reference-testing-requirements.md`). |
 
-**Today:** **8** unit tests + **13** integration tests (**21** automated tests total). **SignalR delivery** to the browser is not covered by WebSocket-level integration tests; **the developer completed final manual smoke testing** (realtime toasts/center, mark-read after refresh, clean console) before submission—see `docs/process-development-log.md` (latest entry).
+**Today:** **9** unit tests + **16** integration tests (**25** automated tests total). **SignalR delivery** to the browser is not covered by WebSocket-level integration tests; **the developer completed final manual smoke testing** (realtime toasts/center, mark-read after refresh, clean console) before submission—see `docs/process-development-log.md` (latest entry).
 
 ---
 
@@ -79,7 +79,7 @@ See **`docs/guide-architecture.md`** for implementation status and sequence diag
 
 ## Future improvements
 
-- CI pipeline: build, test, **forbidden package** guard (`dotnet list package` / grep).
+- CI is already wired (`.github/workflows/ci.yml`: build, test with SQL service, frontend build, forbidden-deps); further hardening could add artifact publishing or stricter policy gates.
 - OpenAPI/Swagger is already available at **`/swagger`** in Development; further **production** work could add versioning, auth hardening, or published artifacts.
 - Replace in-memory notification channel with **durable queue** (Azure Service Bus, RabbitMQ) for production parity.
 - Refresh tokens or shorter-lived access tokens + rotation policy.

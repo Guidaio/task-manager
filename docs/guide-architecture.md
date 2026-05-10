@@ -20,8 +20,8 @@ This document emphasizes **what exists in code today**. Any **optional future** 
 | **JWT authentication** | **Implemented** | Bearer validation + token issuance; HTTP login/register expose JWT to clients. |
 | **Angular frontend** | **Implemented** | SPA in `frontend/task-manager-web`: auth, task CRUD, SignalR client, toasts, notification center (drawer). |
 | **`SignalR` + `BackgroundService` + `Channel<T>`** | **Implemented** | Notifications hub, JWT via `access_token` query on negotiate; worker dispatches after task mutations; SQL persistence. |
-| Unit tests (Application) | **Implemented** | Eight tests targeting `AuthService` / `TaskService`. |
-| Integration tests (`WebApplicationFactory`) | **Implemented** | **Thirteen** tests: health, auth, tasks (including user isolation), notifications list + async persistence after task create + **mark-read persistence** (`Mark_read_persists_and_list_returns_isRead`). |
+| Unit tests (Application) | **Implemented** | Nine tests targeting `AuthService` / `TaskService` (including task list paging mapped from the repository). |
+| Integration tests (`WebApplicationFactory`) | **Implemented** | **Sixteen** tests: health, auth, tasks (including user isolation, **list filter + pagination**), notifications list + async persistence after task create + **mark-read persistence** (`Mark_read_persists_and_list_returns_isRead`). |
 
 ---
 

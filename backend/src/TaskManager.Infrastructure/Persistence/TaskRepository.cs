@@ -37,26 +37,66 @@ public sealed class TaskRepository : ITaskRepository
         return Map(reader);
     }
 
-    public async Task<IReadOnlyList<TaskItem>> ListByUserIdAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task<(IReadOnlyList<TaskItem> Items, int TotalCount)> ListByUserIdPagedAsync(
+        Guid userId,
+        TaskItemStatus? status,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken)
     {
+        if (page < 1)
+            page = 1;
+        if (pageSize < 1)
+            pageSize = 1;
+
+        var offset = (page - 1) * pageSize;
+
         await using var connection = _connections.CreateConnection();
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        int total;
+        await using (var countCmd = connection.CreateCommand())
+        {
+            countCmd.CommandText = """
+                SELECT COUNT(1)
+                FROM TaskItems
+                WHERE UserId = @UserId
+                  AND (@HasStatus = 0 OR Status = @StatusVal);
+                """;
+            countCmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+            countCmd.Parameters.Add(new SqlParameter("@HasStatus", SqlDbType.Bit) { Value = status.HasValue });
+            countCmd.Parameters.Add(new SqlParameter("@StatusVal", SqlDbType.TinyInt)
+            {
+                Value = status.HasValue ? (byte)status.Value : (object)DBNull.Value,
+            });
+            var scalar = await countCmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+            total = scalar is int i ? i : Convert.ToInt32(scalar!, System.Globalization.CultureInfo.InvariantCulture);
+        }
 
         await using var command = connection.CreateCommand();
         command.CommandText = """
             SELECT Id, UserId, Title, Description, Status, DueDateUtc, CreatedAtUtc, UpdatedAtUtc
             FROM TaskItems
             WHERE UserId = @UserId
-            ORDER BY CreatedAtUtc DESC;
+              AND (@HasStatus = 0 OR Status = @StatusVal)
+            ORDER BY CreatedAtUtc DESC
+            OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
             """;
         command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+        command.Parameters.Add(new SqlParameter("@HasStatus", SqlDbType.Bit) { Value = status.HasValue });
+        command.Parameters.Add(new SqlParameter("@StatusVal", SqlDbType.TinyInt)
+        {
+            Value = status.HasValue ? (byte)status.Value : (object)DBNull.Value,
+        });
+        command.Parameters.Add(new SqlParameter("@Offset", SqlDbType.Int) { Value = offset });
+        command.Parameters.Add(new SqlParameter("@PageSize", SqlDbType.Int) { Value = pageSize });
 
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         var list = new List<TaskItem>();
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             list.Add(Map(reader));
 
-        return list;
+        return (list, total);
     }
 
     public async Task<TaskItem> CreateAsync(TaskItem task, CancellationToken cancellationToken)

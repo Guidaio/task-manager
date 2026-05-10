@@ -276,12 +276,11 @@ Cursor moved tracked binaries with `git mv` and updated doc links.
 
 ### What was requested
 
-Finalize submission-facing documentation: remove misleading **“planned”** wording for JWT, FluentValidation, **`WebApplicationFactory`**, SignalR, and related features that are already shipped; fix integration test counts (**13** integration, **21** total with **8** unit); add **`GET /api/notifications`** to the README route table and an explicit **prerequisites** list; align **`docs/process-ai-usage.md`** with **historical vs current** validation narrative; record **developer-performed** final manual smoke and **`dotnet test`** validation (not assistant-executed).
+Finalize submission-facing documentation: remove misleading **“planned”** wording for JWT, FluentValidation, **`WebApplicationFactory`**, SignalR, and related features that are already shipped; **align published test counts** with the repository; add **`GET /api/notifications`** to the README route table and an explicit **prerequisites** list; align **`docs/process-ai-usage.md`** with **historical vs current** validation narrative; record **developer-performed** final manual smoke and **`dotnet test`** validation (not assistant-executed).
 
 ### What was generated/changed
 
-- **`docs/guide-design-decisions.md`**, **`docs/guide-architecture.md`**, **`docs/guide-presentation.md`**, **`docs/process-ai-usage.md`**, **`docs/final-project-review.md`**, **`README.md`**, and this log — wording and checklists updated to match the codebase.
-- **`docs/final-project-review.md`** — §10 smoke items marked complete **as reported by the developer**; §7 clarifies assistant vs developer verification boundaries.
+- **`docs/guide-design-decisions.md`**, **`docs/guide-architecture.md`**, **`docs/guide-presentation.md`**, **`docs/process-ai-usage.md`**, **`README.md`**, and this log — wording and checklists updated to match the codebase.
 
 ### Validation performed (developer-owned)
 
@@ -290,3 +289,47 @@ Finalize submission-facing documentation: remove misleading **“planned”** wo
 ### AI involvement
 
 Cursor applied the documentation edits above per collaborator request; **no application code changes** were required for this pass.
+
+## 2026-05-10 — Docs pass: runbook/security, API error shape, Docker, test counts in guides
+
+### What was requested
+
+Continue the project plan after task list filtering + pagination: add **troubleshooting** + **security** reference docs, align **500** exception JSON with controller **`error`** field, optional **backend Dockerfile**, README/doc index links, and refresh **test totals** everywhere (**9** unit + **16** integration = **25**).
+
+### What was generated/changed
+
+- **`docs/reference-troubleshooting.md`**, **`docs/reference-security.md`** (new); linked from **`README.md`**, **`docs/README.md`**, **`reference-credentials.md`**.
+- **`ExceptionHandlingMiddleware`** — JSON property **`message`** renamed to **`error`** for consistency with other API errors.
+- **`backend/Dockerfile`** (multi-stage .NET 8, port **8080**); README **“Optional: API Docker image”** subsection.
+- **`docs/reference-testing-requirements.md`** — table rows for paging + list tests; **25** total.
+- **`docs/guide-architecture.md`**, **`docs/guide-presentation.md`**, **`docs/process-ai-usage.md`**, **`docs/guide-design-decisions.md`** — counts and coverage wording aligned to **9 / 16 / 25** (incl. list filter + pagination).
+
+### Validation performed
+
+- `dotnet test .\backend\TaskManager.sln` after build (assistant run; SQL Server available; API not holding file locks).
+
+### AI involvement
+
+Cursor authored the docs/middleware/Dockerfile edits and grep-driven consistency pass on guide and review tables.
+
+## 2026-05-10 — Submission documentation trim
+
+### What was requested
+
+Commit and open a PR; reduce documentation to what the exercise needs; confirm planning/decision/process docs remain accurate; keep a clear manual validation list for the author.
+
+### What was generated/changed
+
+- **Removed** **`docs/final-project-review.md`** (long internal audit; requirements coverage already in **`reference-testing-requirements.md`** and guides).
+- **Removed** **`docs/process-session-checkpoint.md`** (stale handoff; history remains in this log).
+- **`docs/README.md`** — single index aligned to exercise deliverables + operational references.
+- **`README.md`** — smoke section points at **`process-development-log.md`** and **`reference-testing-requirements.md`** instead of the removed review doc.
+- **`docs/guide-presentation.md`** — **Future improvements** CI bullet updated (workflow already exists).
+
+### Validation performed
+
+- Link sweep for removed filenames in active docs and root README.
+
+### AI involvement
+
+Cursor applied removals/edits and prepared git commit + PR instructions.

@@ -3,6 +3,40 @@
   <a routerLink="new" class="button primary">New task</a>
 </div>
 
+<div class="list-controls">
+  <label class="control">
+    <span class="control-label">Status</span>
+    <select
+      class="control-input"
+      [value]="statusFilter()"
+      (change)="onStatusChange($event)"
+      aria-label="Filter by status"
+    >
+      @for (opt of statusOptions; track opt.value) {
+        <option [value]="opt.value">{{ opt.label }}</option>
+      }
+    </select>
+  </label>
+  <label class="control">
+    <span class="control-label">Per page</span>
+    <select
+      class="control-input"
+      [value]="pageSize()"
+      (change)="onPageSizeChange($event)"
+      aria-label="Tasks per page"
+    >
+      @for (n of pageSizeOptions; track n) {
+        <option [value]="n">{{ n }}</option>
+      }
+    </select>
+  </label>
+  <div class="pager" role="group" aria-label="Pagination">
+    <button type="button" class="pager-btn" (click)="prevPage()" [disabled]="page() <= 1">Previous</button>
+    <span class="pager-meta">Page {{ page() }} of {{ totalPages() }} ({{ totalCount() }} total)</span>
+    <button type="button" class="pager-btn" (click)="nextPage()" [disabled]="page() >= totalPages()">Next</button>
+  </div>
+</div>
+
 @if (flash()) {
   <p class="banner success" role="status">{{ flash() }}</p>
 }
@@ -14,7 +48,7 @@
 @if (loading()) {
   <p class="muted">Loading tasks…</p>
 } @else if (tasks().length === 0) {
-  <p class="muted empty">No tasks yet. Create one to get started.</p>
+  <p class="muted empty">{{ emptyMessage() }}</p>
 } @else {
   <div class="table-wrap">
     <table>

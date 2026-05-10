@@ -81,6 +81,34 @@ public sealed class TaskServiceTests
     }
 
     [Fact]
+    public async Task List_ReturnsPagedDtos_FromRepository()
+    {
+        var sut = CreateSut();
+        var task = new TaskItem
+        {
+            Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+            UserId = UserId,
+            Title = "One",
+            Description = null,
+            Status = TaskItemStatus.Pending,
+            DueDateUtc = null,
+            CreatedAtUtc = DateTime.UtcNow,
+            UpdatedAtUtc = DateTime.UtcNow,
+        };
+        _tasks
+            .Setup(x => x.ListByUserIdPagedAsync(UserId, null, 1, 25, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(([task], 1));
+
+        var result = await sut.ListAsync(UserId, null, 1, 25, CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        Assert.Single(result.Value!.Items);
+        Assert.Equal(1, result.Value.TotalCount);
+        Assert.Equal(1, result.Value.Page);
+        Assert.Equal(25, result.Value.PageSize);
+    }
+
+    [Fact]
     public async Task Update_ShouldFail_WhenTaskDoesNotBelongToUser()
     {
         var sut = CreateSut();

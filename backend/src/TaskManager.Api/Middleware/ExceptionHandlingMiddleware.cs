@@ -31,7 +31,7 @@ public sealed class ExceptionHandlingMiddleware
 
             await context.Response.WriteAsJsonAsync(new
             {
-                message = "An unexpected error occurred.",
+                error = "An unexpected error occurred.",
                 correlationId,
             });
         }
