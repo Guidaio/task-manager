@@ -35,8 +35,8 @@
             <td><span class="pill">{{ statusLabel(task.status) }}</span></td>
             <td>{{ formatDate(task.dueDateUtc) }}</td>
             <td class="actions">
-              <a [routerLink]="[task.id]" class="link">Edit</a>
-              <button type="button" class="link danger" (click)="deleteTask(task)">Delete</button>
+              <a [routerLink]="[task.id]" class="action-btn action-btn-edit">Edit</a>
+              <button type="button" class="action-btn action-btn-delete" (click)="deleteTask(task)">Delete</button>
             </td>
           </tr>
         }

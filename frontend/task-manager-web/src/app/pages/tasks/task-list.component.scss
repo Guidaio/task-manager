@@ -51,9 +51,63 @@ tbody tr:hover td {
 
 .actions {
   display: flex;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.5rem;
   justify-content: flex-end;
   white-space: nowrap;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 2.125rem;
+  padding: 0.35rem 0.85rem;
+  margin: 0;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  border-radius: 8px;
+  border: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+a.action-btn {
+  color: inherit;
+}
+
+a.action-btn:hover {
+  text-decoration: none;
+}
+
+.action-btn-edit {
+  color: var(--tm-link);
+  border-color: color-mix(in srgb, var(--tm-brand-blue) 28%, var(--tm-border));
+}
+
+.action-btn-edit:hover {
+  background: color-mix(in srgb, var(--tm-brand-blue) 10%, var(--tm-surface));
+  border-color: var(--tm-brand-blue);
+  color: var(--tm-brand-blue-dark);
+}
+
+.action-btn-delete {
+  color: var(--tm-danger);
+  border-color: color-mix(in srgb, var(--tm-danger) 30%, var(--tm-border));
+}
+
+.action-btn-delete:hover {
+  background: color-mix(in srgb, var(--tm-danger) 8%, var(--tm-surface));
+  border-color: color-mix(in srgb, var(--tm-danger) 50%, var(--tm-border));
+}
+
+button.action-btn {
+  appearance: none;
 }
 
 .pill {
@@ -66,13 +120,4 @@ tbody tr:hover td {
 
 .empty {
   padding: 2rem 0;
-}
-
-button.link {
-  font: inherit;
-  cursor: pointer;
-}
-
-.link.danger {
-  color: var(--tm-danger);
 }
