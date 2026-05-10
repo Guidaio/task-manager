@@ -12,18 +12,12 @@ export class NotificationCenterService {
   private readonly http = inject(HttpClient);
   private readonly tokenStore = inject(AuthTokenStore);
 
-  /** Notification ids treated as read (badge off, row not highlighted). */
-  private readonly readIds = signal<ReadonlySet<string>>(new Set());
-
   readonly drawerOpen = signal(false);
   readonly items = signal<NotificationRecord[]>([]);
   readonly loading = signal(false);
   readonly loadError = signal<string | null>(null);
 
-  readonly unreadCount = computed(() => {
-    const seen = this.readIds();
-    return this.items().filter((n) => !seen.has(n.id)).length;
-  });
+  readonly unreadCount = computed(() => this.items().filter((n) => !n.isRead).length);
 
   constructor() {
     effect(() => {
@@ -31,7 +25,6 @@ export class NotificationCenterService {
       if (!token) {
         this.items.set([]);
         this.drawerOpen.set(false);
-        this.readIds.set(new Set());
         this.loadError.set(null);
         return;
       }
@@ -40,22 +33,28 @@ export class NotificationCenterService {
   }
 
   isHighlighted(n: NotificationRecord): boolean {
-    return !this.readIds().has(n.id);
+    return !n.isRead;
   }
 
   markRead(id: string): void {
-    if (!id || this.readIds().has(id)) return;
-    this.readIds.update((s) => new Set(s).add(id));
+    void this.markReadAsync(id);
   }
 
-  private markAllCurrentRead(): void {
-    const ids = this.items().map((n) => n.id);
-    if (ids.length === 0) return;
-    this.readIds.update((s) => {
-      const next = new Set(s);
-      for (const id of ids) next.add(id);
-      return next;
-    });
+  private async markReadAsync(id: string): Promise<void> {
+    if (!id) return;
+    const row = this.items().find((x) => x.id === id);
+    if (!row || row.isRead) return;
+
+    const previous = this.items();
+    this.items.update((list) => list.map((x) => (x.id === id ? { ...x, isRead: true } : x)));
+
+    try {
+      await firstValueFrom(
+        this.http.post(`${environment.apiUrl}/api/notifications/mark-read`, { ids: [id] }),
+      );
+    } catch {
+      this.items.set(previous);
+    }
   }
 
   toggleDrawer(): void {
@@ -74,7 +73,23 @@ export class NotificationCenterService {
 
   closeDrawer(): void {
     this.drawerOpen.set(false);
-    this.markAllCurrentRead();
+    void this.markAllCurrentReadAsync();
+  }
+
+  private async markAllCurrentReadAsync(): Promise<void> {
+    const unreadIds = this.items().filter((n) => !n.isRead).map((n) => n.id);
+    if (unreadIds.length === 0) return;
+
+    const previous = this.items();
+    this.items.update((list) => list.map((x) => (!x.isRead ? { ...x, isRead: true } : x)));
+
+    try {
+      await firstValueFrom(
+        this.http.post(`${environment.apiUrl}/api/notifications/mark-read`, { ids: unreadIds }),
+      );
+    } catch {
+      this.items.set(previous);
+    }
   }
 
   async refreshFromApi(): Promise<void> {

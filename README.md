@@ -73,7 +73,7 @@ Base URL: whatever port `dotnet run` prints (e.g. `http://localhost:5035`).
 | POST | `/api/tasks` | Bearer JWT |
 | PUT | `/api/tasks/{id}` | Bearer JWT |
 | DELETE | `/api/tasks/{id}` | Bearer JWT |
-| GET | `/api/notifications` | Bearer JWT |
+| POST | `/api/notifications/mark-read` | Bearer JWT |
 
 Send `Authorization: Bearer <token>` from `/api/auth/login` or register for task routes. Enum `status` values serialize as JSON strings (`Pending`, `InProgress`, ...).
 

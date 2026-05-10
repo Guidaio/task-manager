@@ -70,6 +70,50 @@ public sealed class NotificationsApiTests
         Assert.NotNull(found);
     }
 
+    [Fact]
+    public async Task Mark_read_persists_and_list_returns_isRead()
+    {
+        var token = await RegisterAndLoginAsync($"nread-{Guid.NewGuid():N}@taskmanager.test");
+        using var client = _fixture.Factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        const string title = "Mark read notification title";
+        var createResp = await client.PostAsJsonAsync(
+            new Uri("/api/tasks", UriKind.Relative),
+            new CreateTaskRequest { Title = title, Status = TaskItemStatus.Pending },
+            TestJson.Options);
+        createResp.EnsureSuccessStatusCode();
+
+        NotificationDto? note = null;
+        for (var i = 0; i < 20; i++)
+        {
+            await Task.Delay(150);
+            var listResp = await client.GetAsync(new Uri("/api/notifications", UriKind.Relative));
+            listResp.EnsureSuccessStatusCode();
+            var items = await listResp.Content.ReadFromJsonAsync<List<NotificationDto>>(TestJson.Options);
+            note = items?.FirstOrDefault(n =>
+                n.Message.Contains(title, StringComparison.Ordinal) &&
+                n.Message.Contains("created", StringComparison.OrdinalIgnoreCase));
+            if (note is not null)
+                break;
+        }
+
+        Assert.NotNull(note);
+        Assert.False(note.IsRead);
+
+        var markResp = await client.PostAsJsonAsync(
+            new Uri("/api/notifications/mark-read", UriKind.Relative),
+            new MarkNotificationsReadRequest { Ids = [note.Id] },
+            TestJson.Options);
+        Assert.Equal(HttpStatusCode.NoContent, markResp.StatusCode);
+
+        var listAfter = await client.GetAsync(new Uri("/api/notifications", UriKind.Relative));
+        listAfter.EnsureSuccessStatusCode();
+        var listItems = await listAfter.Content.ReadFromJsonAsync<List<NotificationDto>>(TestJson.Options);
+        var updated = listItems!.First(n => n.Id == note.Id);
+        Assert.True(updated.IsRead);
+    }
+
     private async Task<string> RegisterAndLoginAsync(string email)
     {
         using var client = _fixture.Factory.CreateClient();

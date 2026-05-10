@@ -30,6 +30,28 @@ public sealed class NotificationsController : ControllerBase
         return Ok(items.Select(Map).ToList());
     }
 
+    [HttpPost("mark-read")]
+    public async Task<IActionResult> MarkRead(
+        [FromBody] MarkNotificationsReadRequest? body,
+        CancellationToken cancellationToken)
+    {
+        var userId = User.TryGetUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Missing or invalid authentication." });
+
+        if (body?.Ids is null || body.Ids.Count == 0)
+            return BadRequest(new { error = "At least one notification id is required." });
+
+        if (body.Ids.Count > 50)
+            return BadRequest(new { error = "Too many notification ids." });
+
+        var distinct = body.Ids.Distinct().ToList();
+        await _notifications
+            .MarkAsReadForUserAsync(userId.Value, distinct, cancellationToken)
+            .ConfigureAwait(false);
+        return NoContent();
+    }
+
     private static NotificationDto Map(Notification n) =>
         new()
         {

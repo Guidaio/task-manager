@@ -77,6 +77,37 @@ public sealed class NotificationRepository : INotificationRepository
         return list;
     }
 
+    public async Task MarkAsReadForUserAsync(
+        Guid userId,
+        IReadOnlyList<Guid> notificationIds,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(notificationIds);
+        if (notificationIds.Count == 0)
+            return;
+
+        await using var connection = _connections.CreateConnection();
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        await using var command = connection.CreateCommand();
+        var paramNames = new string[notificationIds.Count];
+        for (var i = 0; i < notificationIds.Count; i++)
+        {
+            var name = $"@id{i}";
+            paramNames[i] = name;
+            command.Parameters.Add(new SqlParameter(name, SqlDbType.UniqueIdentifier) { Value = notificationIds[i] });
+        }
+
+        command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+        command.CommandText = $"""
+            UPDATE dbo.Notifications
+            SET IsRead = 1
+            WHERE UserId = @UserId AND Id IN ({string.Join(", ", paramNames)});
+            """;
+
+        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     private static Notification Map(SqlDataReader reader)
     {
         var taskIdOrdinal = reader.GetOrdinal("TaskId");

@@ -37,7 +37,7 @@ dotnet test .\backend\TaskManager.sln
 
 If **`dotnet test` fails with MSB3027 / “file is being used by another process”**, stop any running **`TaskManager.Api`** (or other processes locking `bin\Debug` under the API project), then run tests again.
 
-**Latest verification (local):** 20 tests — **8** unit (`TaskManager.UnitTests`), **12** integration (`TaskManager.IntegrationTests`), all passing.
+**Latest verification (local):** 21 tests — **8** unit (`TaskManager.UnitTests`), **13** integration (`TaskManager.IntegrationTests`), all passing.
 
 ### Unit tests (application rules, mocked repositories)
 
@@ -68,6 +68,7 @@ If **`dotnet test` fails with MSB3027 / “file is being used by another process
 | `List_notifications_without_auth_returns_unauthorized` | `NotificationsApiTests.cs` | R9 + R5 |
 | `List_notifications_with_auth_returns_ok` | `NotificationsApiTests.cs` | R9 |
 | `Task_create_eventually_persist_notification` | `NotificationsApiTests.cs` | R9 (DB + async worker) |
+| `Mark_read_persists_and_list_returns_isRead` | `NotificationsApiTests.cs` | R9 read persistence |
 
 ---
 
@@ -110,7 +111,7 @@ dotnet list TaskManager.sln package --include-transitive | Select-String -Patter
 |------|--------|
 | SignalR WebSocket delivery to browser | **Manual** smoke; hub not exercised by integration tests (would need a test client or E2E). |
 | Angular UI / notification center | **Manual** smoke; no Playwright/Cypress suite. |
-| Server-side `IsRead` on notifications | Persisted in DB but **read/unread UX** is client-side in the panel; API could be extended later without changing core exercise scope. |
+| Server-side `IsRead` on notifications | **`POST /api/notifications/mark-read`** updates `IsRead` in SQL; Angular uses `isRead` from **`GET /api/notifications`** and after hover/close actions. |
 
 These are **not** required to satisfy the README checklist; documenting them avoids overstating automated coverage.
 
@@ -121,6 +122,5 @@ These are **not** required to satisfy the README checklist; documenting them avo
 Reasonable for a real product, but **not necessary** to call this exercise complete:
 
 - **CI:** `dotnet build`, `dotnet test`, forbidden-package grep on every PR.
-- **PATCH `/api/notifications/{id}/read`** (or mark-all-read) if reviewers should see persistent read state after refresh.
 
 Otherwise the stack matches a typical “Senior .NET + Angular + SQL + tests + SignalR notification” submission without over-building.
