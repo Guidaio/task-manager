@@ -75,7 +75,7 @@ Base URL: whatever port `dotnet run` prints (e.g. `http://localhost:5035`).
 | GET | `/api/health` | No |
 | POST | `/api/auth/register` | No |
 | POST | `/api/auth/login` | No |
-| GET | `/api/tasks` | Bearer JWT |
+| GET | `/api/tasks` | Bearer JWT | See **Task list query** below |
 | GET | `/api/tasks/{id}` | Bearer JWT |
 | POST | `/api/tasks` | Bearer JWT |
 | PUT | `/api/tasks/{id}` | Bearer JWT |
@@ -85,7 +85,19 @@ Base URL: whatever port `dotnet run` prints (e.g. `http://localhost:5035`).
 
 Send `Authorization: Bearer <token>` from `/api/auth/login` or register for **protected** task and notification routes. Enum `status` values serialize as JSON strings (`Pending`, `InProgress`, ...).
 
-Task create/update/delete enqueue notifications that are stored in SQL and pushed to the signed-in user over SignalR (see below).
+### Task list query (`GET /api/tasks`)
+
+Response body: `{ "items": [ ... TaskDto ... ], "totalCount", "page", "pageSize" }`.
+
+| Query | Default | Notes |
+|-------|---------|--------|
+| `status` | *(none)* | Optional. `Pending`, `InProgress`, `Completed`, or `Cancelled` (case-insensitive). Omit to list all statuses. |
+| `page` | `1` | 1-based; values less than 1 are treated as 1. |
+| `pageSize` | `25` | Clamped to **1–100** (large values capped at 100). |
+
+Example: `/api/tasks?status=Completed&page=1&pageSize=10`
+
+**Task create/update/delete** enqueue notifications that are stored in SQL and pushed to the signed-in user over SignalR (see below).
 
 ### Realtime (SignalR)
 
@@ -132,6 +144,17 @@ Run the API (Development profile uses `appsettings.Development.json`; requires S
 dotnet run --project .\backend\src\TaskManager.Api\TaskManager.Api.csproj
 ```
 
+### Optional: API Docker image
+
+Multi-stage build from **repository root** (requires Docker). SQL must still be reachable from the container (configure connection string via environment for your network).
+
+```powershell
+docker build -f backend/Dockerfile -t taskmanager-api .
+docker run --rm -p 8080:8080 -e ASPNETCORE_ENVIRONMENT=Development -e Database__ConnectionString="YOUR_SQL_CONNECTION" taskmanager-api
+```
+
+Defaults: **`ASPNETCORE_URLS=http://+:8080`**. See [`docs/reference-troubleshooting.md`](docs/reference-troubleshooting.md).
+
 Run the Angular client (expects API at `http://localhost:5035`; adjust `src/environments/environment.ts` if your port differs):
 
 ```powershell
@@ -143,7 +166,7 @@ Browse `http://localhost:4200`. CORS allows this origin against the API.
 
 ## Final Smoke Test Checklist
 
-For a full **pre-submission** narrative (including **developer-reported** validation), see **`docs/final-project-review.md`** §10 and **`docs/process-development-log.md`** (latest entry). Quick local checks:
+For milestone-level validation notes, see **`docs/process-development-log.md`** (latest entry) and **`docs/reference-testing-requirements.md`**. Quick local checks:
 
 - Frontend login/register.
 - Task list/create/edit/delete.
@@ -154,6 +177,8 @@ For a full **pre-submission** narrative (including **developer-reported** valida
 ## Documentation
 
 - **CI** — on push/PR to `main` or `master`, [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs backend build/tests (with SQL Server service), frontend build, and forbidden-dependency checks.
+- [`docs/reference-troubleshooting.md`](docs/reference-troubleshooting.md) — Docker/SQL, DB reset, MSB3027 file locks, integration tests, forbidden deps, optional API Docker image
+- [`docs/reference-security.md`](docs/reference-security.md) — passwords, JWT, isolation, SQL parameters, secrets (exercise scope)
 - [`docs/reference-testing-requirements.md`](docs/reference-testing-requirements.md) — requirements traceability, test inventory, forbidden-deps checks, known gaps
 - [`docs/reference-credentials.md`](docs/reference-credentials.md) — local URLs, demo user, SQL, JWT (dev)
 - [`docs/guide-architecture.md`](docs/guide-architecture.md)

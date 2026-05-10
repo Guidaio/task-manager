@@ -75,14 +75,35 @@ public sealed class TaskService : ITaskService
         return Result<TaskDto>.Ok(ToDto(task));
     }
 
-    public async Task<Result<IReadOnlyList<TaskDto>>> ListAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task<Result<TaskListResponseDto>> ListAsync(
+        Guid userId,
+        TaskItemStatus? status,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken)
     {
         if (userId == Guid.Empty)
-            return Result<IReadOnlyList<TaskDto>>.Fail("User is required.");
+            return Result<TaskListResponseDto>.Fail("User is required.");
 
-        var items = await _tasks.ListByUserIdAsync(userId, cancellationToken).ConfigureAwait(false);
+        if (page < 1)
+            page = 1;
+        if (pageSize < 1)
+            pageSize = 25;
+        if (pageSize > 100)
+            pageSize = 100;
+
+        var (items, total) = await _tasks
+            .ListByUserIdPagedAsync(userId, status, page, pageSize, cancellationToken)
+            .ConfigureAwait(false);
         var dtos = items.Select(ToDto).ToArray();
-        return Result<IReadOnlyList<TaskDto>>.Ok(dtos);
+        return Result<TaskListResponseDto>.Ok(
+            new TaskListResponseDto
+            {
+                Items = dtos,
+                TotalCount = total,
+                Page = page,
+                PageSize = pageSize,
+            });
     }
 
     public async Task<Result<TaskDto>> UpdateAsync(Guid userId, Guid taskId, UpdateTaskRequest request, CancellationToken cancellationToken)

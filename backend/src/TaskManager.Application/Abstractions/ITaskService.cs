@@ -1,5 +1,6 @@
 using TaskManager.Application.Common;
 using TaskManager.Application.Dtos.Tasks;
+using TaskManager.Domain.Enums;
 
 namespace TaskManager.Application.Abstractions;
 
@@ -9,7 +10,12 @@ public interface ITaskService
 
     Task<Result<TaskDto>> GetByIdAsync(Guid userId, Guid taskId, CancellationToken cancellationToken);
 
-    Task<Result<IReadOnlyList<TaskDto>>> ListAsync(Guid userId, CancellationToken cancellationToken);
+    Task<Result<TaskListResponseDto>> ListAsync(
+        Guid userId,
+        TaskItemStatus? status,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken);
 
     Task<Result<TaskDto>> UpdateAsync(Guid userId, Guid taskId, UpdateTaskRequest request, CancellationToken cancellationToken);
 

@@ -1,8 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NotificationCenterService } from '../../core/notifications/notification-center.service';
-import type { TaskDto } from '../../core/tasks/task.models';
+import type { TaskDto, TaskItemStatus } from '../../core/tasks/task.models';
 import { TasksService } from '../../core/tasks/tasks.service';
 
 const FLASH_KEY = 'taskManager.flash';
@@ -29,6 +29,32 @@ export class TaskListComponent {
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly flash = signal<string | null>(null);
+  protected readonly totalCount = signal(0);
+  protected readonly statusFilter = signal<TaskItemStatus | ''>('');
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal(25);
+
+  protected readonly totalPages = computed(() => {
+    const tc = this.totalCount();
+    const ps = this.pageSize();
+    return Math.max(1, Math.ceil(tc / ps));
+  });
+
+  protected readonly statusOptions: { value: TaskItemStatus | ''; label: string }[] = [
+    { value: '', label: 'All statuses' },
+    { value: 'Pending', label: 'Pending' },
+    { value: 'InProgress', label: 'In progress' },
+    { value: 'Completed', label: 'Completed' },
+    { value: 'Cancelled', label: 'Cancelled' },
+  ];
+
+  protected readonly pageSizeOptions = [10, 25, 50, 100] as const;
+
+  protected readonly emptyMessage = computed(() => {
+    if (this.page() > 1 && this.tasks().length === 0) return 'No tasks on this page.';
+    if (this.statusFilter() !== '') return 'No tasks match this filter.';
+    return 'No tasks yet. Create one to get started.';
+  });
 
   constructor() {
     this.consumeFlashFromStorage();
@@ -48,19 +74,53 @@ export class TaskListComponent {
     }
   }
 
+  protected onStatusChange(event: Event): void {
+    const v = (event.target as HTMLSelectElement).value as TaskItemStatus | '';
+    this.statusFilter.set(v);
+    this.page.set(1);
+    this.reload();
+  }
+
+  protected onPageSizeChange(event: Event): void {
+    const v = Number((event.target as HTMLSelectElement).value);
+    this.pageSize.set(Number.isFinite(v) ? v : 25);
+    this.page.set(1);
+    this.reload();
+  }
+
+  protected prevPage(): void {
+    if (this.page() <= 1) return;
+    this.page.update((p) => p - 1);
+    this.reload();
+  }
+
+  protected nextPage(): void {
+    if (this.page() >= this.totalPages()) return;
+    this.page.update((p) => p + 1);
+    this.reload();
+  }
+
   protected reload(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.tasksService.list().subscribe({
-      next: (tasks) => {
-        this.tasks.set(tasks);
-        this.loading.set(false);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.loading.set(false);
-        this.error.set(apiMessage(err, 'Could not load tasks.'));
-      },
-    });
+    const st = this.statusFilter();
+    this.tasksService
+      .list({
+        status: st || undefined,
+        page: this.page(),
+        pageSize: this.pageSize(),
+      })
+      .subscribe({
+        next: (res) => {
+          this.tasks.set(res.items);
+          this.totalCount.set(res.totalCount);
+          this.loading.set(false);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.loading.set(false);
+          this.error.set(apiMessage(err, 'Could not load tasks.'));
+        },
+      });
   }
 
   protected statusLabel(s: string): string {

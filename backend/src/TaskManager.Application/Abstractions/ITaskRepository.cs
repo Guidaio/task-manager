@@ -1,12 +1,16 @@
 using TaskManager.Domain.Entities;
-
-namespace TaskManager.Application.Abstractions;
+using TaskManager.Domain.Enums;
 
 public interface ITaskRepository
 {
     Task<TaskItem?> GetByIdAndUserIdAsync(Guid taskId, Guid userId, CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<TaskItem>> ListByUserIdAsync(Guid userId, CancellationToken cancellationToken);
+    Task<(IReadOnlyList<TaskItem> Items, int TotalCount)> ListByUserIdPagedAsync(
+        Guid userId,
+        TaskItemStatus? status,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken);
 
     Task<TaskItem> CreateAsync(TaskItem task, CancellationToken cancellationToken);
 

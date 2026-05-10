@@ -10,6 +10,13 @@ export interface TaskDto {
   updatedAtUtc: string;
 }
 
+export interface PagedTasksResponse {
+  items: TaskDto[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface CreateTaskRequest {
   title: string;
   description?: string | null;

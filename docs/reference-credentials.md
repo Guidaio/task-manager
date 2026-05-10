@@ -88,6 +88,8 @@ For Swagger **Authorize**, paste the **raw JWT** only (no `Bearer ` prefix).
 
 If build fails with DLL/exe “in use”, stop the running API (Ctrl+C) before `dotnet build` or `dotnet run`.
 
+**Deeper setup / CI / Docker API / DB reset:** [reference-troubleshooting.md](reference-troubleshooting.md)
+
 ---
 
 _Source of truth in code: `DemoSeed`, `docker-compose.yml`, `appsettings.Development.json`, `launchSettings.json`, `environment.ts`._

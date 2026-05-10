@@ -1,15 +1,19 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import type { CreateTaskRequest, TaskDto, UpdateTaskRequest } from './task.models';
+import type { CreateTaskRequest, PagedTasksResponse, TaskDto, UpdateTaskRequest } from './task.models';
 
 @Injectable({ providedIn: 'root' })
 export class TasksService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/api/tasks`;
 
-  list() {
-    return this.http.get<TaskDto[]>(this.base);
+  list(options?: { status?: string; page?: number; pageSize?: number }) {
+    let params = new HttpParams();
+    if (options?.status) params = params.set('status', options.status);
+    if (options?.page != null) params = params.set('page', String(options.page));
+    if (options?.pageSize != null) params = params.set('pageSize', String(options.pageSize));
+    return this.http.get<PagedTasksResponse>(this.base, { params });
   }
 
   getById(id: string) {

@@ -4,6 +4,7 @@ using TaskManager.Api.Extensions;
 using TaskManager.Application.Abstractions;
 using TaskManager.Application.Common;
 using TaskManager.Application.Dtos.Tasks;
+using TaskManager.Domain.Enums;
 
 namespace TaskManager.Api.Controllers;
 
@@ -20,13 +21,31 @@ public sealed class TasksController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> List(CancellationToken cancellationToken)
+    public async Task<IActionResult> List(
+        [FromQuery] string? status,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
+        CancellationToken cancellationToken)
     {
         var userId = ResolveUserIdOrUnauthorized();
         if (userId is null)
             return UnauthorizedUser();
 
-        var result = await _taskService.ListAsync(userId.Value, cancellationToken);
+        TaskItemStatus? statusFilter = null;
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            if (!Enum.TryParse<TaskItemStatus>(status, ignoreCase: true, out var parsed) || !Enum.IsDefined(parsed))
+                return BadRequest(new { error = "Invalid status. Use Pending, InProgress, Completed, or Cancelled." });
+
+            statusFilter = parsed;
+        }
+
+        var p = page is null || page.Value < 1 ? 1 : page.Value;
+        var ps = pageSize is null || pageSize.Value < 1 ? 25 : pageSize.Value;
+        if (ps > 100)
+            ps = 100;
+
+        var result = await _taskService.ListAsync(userId.Value, statusFilter, p, ps, cancellationToken);
         if (!result.Succeeded)
             return BadRequest(new { error = result.Error });
 
