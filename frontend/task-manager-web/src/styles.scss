@@ -1,11 +1,19 @@
 :root {
-  --tm-bg: #f4f1ec;
+  /* Brand: blue + orange (approximates exercise PDF footnote; adjust if you have official hex) */
+  --tm-brand-blue: #154e7a;
+  --tm-brand-blue-dark: #0f3a5c;
+  --tm-brand-orange: #e2782d;
+  --tm-brand-orange-dark: #c46220;
+
+  --tm-bg: #f2f5f9;
   --tm-surface: #ffffff;
-  --tm-text: #1c1917;
-  --tm-muted: #78716c;
-  --tm-border: #e7e5e4;
-  --tm-accent: #0d9488;
-  --tm-accent-hover: #0f766e;
+  --tm-text: #1a2330;
+  --tm-muted: #5a6a7a;
+  --tm-border: #d5dee8;
+  --tm-accent: var(--tm-brand-orange);
+  --tm-accent-hover: var(--tm-brand-orange-dark);
+  --tm-link: var(--tm-brand-blue);
+  --tm-link-hover: var(--tm-brand-orange-dark);
   --tm-danger: #b91c1c;
   --tm-radius: 10px;
 }
@@ -38,12 +46,12 @@ body {
 }
 
 a {
-  color: var(--tm-accent);
+  color: var(--tm-link);
   text-decoration: none;
 }
 
 a:hover {
-  color: var(--tm-accent-hover);
+  color: var(--tm-link-hover);
   text-decoration: underline;
 }
 
@@ -62,7 +70,7 @@ input:focus,
 textarea:focus,
 select:focus,
 button:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--tm-accent) 55%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--tm-brand-blue) 45%, transparent);
   outline-offset: 1px;
 }
 
@@ -129,9 +137,9 @@ button.ghost:hover {
 }
 
 .banner.success {
-  background: color-mix(in srgb, var(--tm-accent) 14%, transparent);
-  color: var(--tm-accent-hover);
-  border: 1px solid color-mix(in srgb, var(--tm-accent) 28%, transparent);
+  background: color-mix(in srgb, var(--tm-brand-blue) 10%, var(--tm-surface));
+  color: var(--tm-brand-blue-dark);
+  border: 1px solid color-mix(in srgb, var(--tm-brand-blue) 22%, transparent);
 }
 
 .muted {

@@ -1,6 +1,8 @@
 <header class="top">
   <div class="brand">
-    <a routerLink="/tasks" class="logo">Task Manager</a>
+    <a routerLink="/tasks" class="logo" aria-label="BallastLane — Tasks">
+      <span class="logo-ballast">Ballast</span><span class="logo-lane">Lane</span>
+    </a>
   </div>
   <nav class="nav">
     @if (tokenStore.token()) {
