@@ -61,7 +61,7 @@ Paraphrased intent communicated to Cursor:
 
 ### Corrections / decisions during Step 2
 
-- **`TaskItemStatus` naming:** Initial naming as `TaskStatus` conflicted with **`System.Threading.Tasks.TaskStatus`** under SDK implicit usings. Renamed the domain enum to **`TaskItemStatus`** with the same member values (Pending, InProgress, Completed, Cancelled). Documented in `docs/design-decisions.md`.
+- **`TaskItemStatus` naming:** Initial naming as `TaskStatus` conflicted with **`System.Threading.Tasks.TaskStatus`** under SDK implicit usings. Renamed the domain enum to **`TaskItemStatus`** with the same member values (Pending, InProgress, Completed, Cancelled). Documented in `docs/guide-design-decisions.md`.
 - **Result / error modeling:** Application services return **`Result`** / **`Result<T>`** for expected failures (validation, not-found, duplicate email) so HTTP mapping can stay thin and consistent later; this avoids using exceptions for routine control flow.
 
 ---

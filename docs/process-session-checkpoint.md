@@ -23,7 +23,7 @@ Use this file when picking up after a break or the next day.
 - **Step 3:** ADO.NET repositories, `DatabaseInitializer`, BCrypt, `JwtTokenService`, DI via `AddInfrastructure`.
 - **Step 4:** `POST /api/auth/register`, `POST /api/auth/login`, task CRUD **`/api/tasks`** with JWT, **`GET /api/health`**, FluentValidation, middleware, CORS, **`/swagger`** in Development.
 
-See **`README.md`**, **`docs/development-log.md`**, **`docs/architecture.md`**.
+See **`README.md`**, **`docs/process-development-log.md`**, **`docs/guide-architecture.md`**.
 
 ---
 
@@ -56,4 +56,4 @@ Then `GET /api/health`, `POST /api/auth/login`, `GET /api/tasks` with Bearer tok
 - **Database:** `Database:ConnectionString` / `MasterConnectionString` in **`appsettings.Development.json`** (not hardcoded in repository SQL — only **demo seed ids** are constants in `DemoSeed`).
 - **JWT:** `Jwt` section in appsettings; production would use env/secrets, not committed keys.
 
-You may delete this file once you rely solely on `docs/development-log.md`.
+You may delete this file once you rely solely on `docs/process-development-log.md`.

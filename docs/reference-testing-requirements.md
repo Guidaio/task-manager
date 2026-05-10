@@ -5,7 +5,7 @@ This document maps **what the exercise asks for** (as stated in-repo) to **how w
 **Sources of truth**
 
 - [`README.md`](../README.md) — stack, restrictions, core checklist, HTTP surface, smoke checklist.
-- [`docs/presentation.md`](presentation.md) — demo outline and submission framing (Ballast Lane–style Senior .NET exercise).
+- [`guide-presentation.md`](guide-presentation.md) — demo outline and submission framing (Ballast Lane–style Senior .NET exercise).
 - **Note:** The original external job posting is **not** in this repository. Requirements here are derived only from those files and the implemented codebase.
 
 ---
@@ -14,7 +14,7 @@ This document maps **what the exercise asks for** (as stated in-repo) to **how w
 
 | ID | Requirement | Notes |
 |----|----------------|-------|
-| R1 | .NET backend, Clean Architecture | Layering per `README` / `architecture.md`. |
+| R1 | .NET backend, Clean Architecture | Layering per `README` / `guide-architecture.md`. |
 | R2 | ASP.NET Core Web API, controllers | REST routes in `README`. |
 | R3 | SQL Server + **plain ADO.NET** (no EF, Dapper) | Infrastructure repositories. |
 | R4 | No MediatR / mediator libraries | Same restriction block as ORMs. |

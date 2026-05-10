@@ -81,17 +81,24 @@ ballastlane-task-manager/
     task-manager-web/
 
   docs/
-    ai-usage.md
-    architecture.md
-    presentation.md
-    development-log.md
-    design-decisions.md
+    README.md
+    brief/
+      ballast-lane-task-manager.en.txt
+      ballast-lane-task-manager.pt-BR.txt
+    guide-architecture.md
+    guide-design-decisions.md
+    guide-presentation.md
+    reference-credentials.md
+    reference-testing-requirements.md
+    process-ai-usage.md
+    process-development-log.md
+    process-session-checkpoint.md
 
   docker-compose.yml
   README.md
 
 DESIGN DECISIONS AND RATIONALE
-Please create docs/design-decisions.md and keep it updated.
+Please create docs/guide-design-decisions.md and keep it updated.
 
 Use the following rationale as the initial decision record.
 
@@ -419,7 +426,7 @@ Must include:
 - future improvements.
 
 MANDATORY GENAI DOCUMENTATION
-Create docs/ai-usage.md.
+Create docs/process-ai-usage.md.
 
 It should include:
 1. Tools used:
@@ -453,7 +460,7 @@ It should include:
    - SignalR/notification flow adjustments.
 
 AUTOMATIC DEVELOPMENT LOG
-Create and maintain docs/development-log.md.
+Create and maintain docs/process-development-log.md.
 
 Cursor should update this file throughout development, without waiting for me to manually write everything.
 
@@ -481,8 +488,8 @@ Prompt used, relevant output, and human adjustments.
 
 IMPORTANT:
 Before each large change, show me a short plan.
-After each relevant change, update docs/development-log.md.
-When GenAI is used to generate code, record it in docs/ai-usage.md or prepare it for later consolidation.
+After each relevant change, update docs/process-development-log.md.
+When GenAI is used to generate code, record it in docs/process-ai-usage.md or prepare it for later consolidation.
 
 WHAT I WANT FROM YOU NOW
 Before implementing, review this plan and answer:

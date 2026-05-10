@@ -1,6 +1,6 @@
 # Presentation Notes
 
-Use this document as a **short speaker outline** for the technical demo and **code review**. Pair it with `docs/architecture.md`, `docs/design-decisions.md`, `docs/ai-usage.md`, and `docs/testing-and-requirements.md` for depth.
+Use this document as a **short speaker outline** for the technical demo and **code review**. Pair it with `docs/guide-architecture.md`, `docs/guide-design-decisions.md`, `docs/process-ai-usage.md`, and `docs/reference-testing-requirements.md` for depth.
 
 ---
 
@@ -9,7 +9,7 @@ Use this document as a **short speaker outline** for the technical demo and **co
 - **Purpose:** Full stack **Task Manager** for the Ballast Lane–style Senior .NET exercise: authenticated users manage **their own** tasks (CRUD), with clean layering, custom persistence (no EF/Dapper/MediatR), tests, and documented GenAI usage.
 - **Backend:** .NET 8, ASP.NET Core Web API with **Controllers**, Clean Architecture, SQL Server, **ADO.NET**, **JWT** register/login + protected task routes, FluentValidation on requests.
 - **Frontend:** Angular SPA: login/register, task CRUD, responsive UI, JWT interceptor, SignalR client (**toasts + notification center drawer** after task events).
-- **Docs:** README runbook, architecture/design/AI logs, development log per milestone, **testing/requirements traceability** (`docs/testing-and-requirements.md`).
+- **Docs:** README runbook, architecture/design/AI logs, development log per milestone, **testing/requirements traceability** (`docs/reference-testing-requirements.md`).
 
 ---
 
@@ -28,7 +28,7 @@ As an **authenticated user**, I want to **manage my tasks**, so I can track what
 
 **Dependency rule:** inner layers do not depend on outer layers; Infrastructure implements interfaces defined in Application.
 
-See **`docs/architecture.md`** for implementation status and sequence diagrams.
+See **`docs/guide-architecture.md`** for implementation status and sequence diagrams.
 
 ---
 
@@ -50,7 +50,7 @@ See **`docs/architecture.md`** for implementation status and sequence diagrams.
 |--------|------|
 | **Unit tests** | Fast feedback on **application rules**: duplicate email, invalid credentials, empty title, invalid enum payload, not-found / wrong-user paths via mocked repositories (`Moq`). |
 | **Integration tests** | **`WebApplicationFactory`**: real HTTP pipeline + database, JWT, **401** without token, task CRUD, **user isolation** between two users, notifications list + persisted row after task create. |
-| **Manual / smoke** | README checklist + browser: login/register, CRUD, notifications, **no relevant console errors**, forbidden-deps verification (see `docs/testing-and-requirements.md`). |
+| **Manual / smoke** | README checklist + browser: login/register, CRUD, notifications, **no relevant console errors**, forbidden-deps verification (see `docs/reference-testing-requirements.md`). |
 
 **Today:** eight unit tests on Application services; **twelve** integration tests on the HTTP + SQL stack. SignalR **delivery** to the browser remains a manual check (no Playwright/Cypress in-repo).
 
@@ -60,7 +60,7 @@ See **`docs/architecture.md`** for implementation status and sequence diagrams.
 
 - **Tool:** Cursor for planning, docs, and Step 2 Domain/Application/tests generation.
 - **Process:** Prompt → generated structure/code → **human-led review** (layering, naming clashes, `Result` modeling, assignment bans).
-- **Evidence:** Full audit trail in **`docs/ai-usage.md`** (prompts paraphrased, representative outputs, validation commands, corrections).
+- **Evidence:** Full audit trail in **`docs/process-ai-usage.md`** (prompts paraphrased, representative outputs, validation commands, corrections).
 
 **Talking point:** GenAI accelerated scaffolding; **engineering judgment** enforced constraints (no EF/Dapper/MediatR, parameterized SQL plan, core-before-SignalR).
 

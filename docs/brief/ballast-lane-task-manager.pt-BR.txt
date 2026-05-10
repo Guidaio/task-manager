@@ -80,10 +80,18 @@ ballastlane-task-manager/
     task-manager-web/
 
   docs/
-    ai-usage.md
-    architecture.md
-    presentation.md
-    development-log.md
+    README.md
+    brief/
+      ballast-lane-task-manager.en.txt
+      ballast-lane-task-manager.pt-BR.txt
+    guide-architecture.md
+    guide-design-decisions.md
+    guide-presentation.md
+    reference-credentials.md
+    reference-testing-requirements.md
+    process-ai-usage.md
+    process-development-log.md
+    process-session-checkpoint.md
 
   docker-compose.yml
   README.md
@@ -370,7 +378,7 @@ Deve conter:
 - melhorias futuras.
 
 DOCUMENTAÇÃO OBRIGATÓRIA DE GENAI
-Criar docs/ai-usage.md.
+Criar docs/process-ai-usage.md.
 
 Deve conter:
 1. Ferramentas usadas:
@@ -404,7 +412,7 @@ Deve conter:
    - ajustes no SignalR/notification flow.
 
 LOG AUTOMÁTICO DO DESENVOLVIMENTO
-Criar e manter docs/development-log.md.
+Criar e manter docs/process-development-log.md.
 
 Você, Cursor, deve atualizar esse arquivo ao longo do desenvolvimento, sem esperar que eu faça manualmente tudo.
 
@@ -432,8 +440,8 @@ Prompt usado, output relevante, ajustes feitos pelo humano.
 
 IMPORTANTE:
 Antes de cada grande alteração, me mostre um plano curto.
-Depois de cada alteração relevante, atualize docs/development-log.md.
-Quando usar GenAI para gerar código, registre em docs/ai-usage.md ou deixe preparado para consolidar depois.
+Depois de cada alteração relevante, atualize docs/process-development-log.md.
+Quando usar GenAI para gerar código, registre em docs/process-ai-usage.md ou deixe preparado para consolidar depois.
 
 O QUE EU QUERO DE VOCÊ AGORA
 Antes de começar a implementar, revise este plano e responda:

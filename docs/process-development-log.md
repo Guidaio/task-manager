@@ -20,11 +20,11 @@ Create the initial repository structure, .NET solution and backend projects, tes
 - Added `docker-compose.yml` with SQL Server 2022 Developer.
 - Added `README.md` with stack, restrictions, minimum commands, core green checklist, and final smoke test checklist.
 - Added initial docs:
-  - `docs/architecture.md`
-  - `docs/design-decisions.md`
-  - `docs/ai-usage.md`
-  - `docs/presentation.md`
-  - `docs/development-log.md`
+  - `docs/guide-architecture.md`
+  - `docs/guide-design-decisions.md`
+  - `docs/process-ai-usage.md`
+  - `docs/guide-presentation.md`
+  - `docs/process-development-log.md`
 
 ### Technical decisions
 
@@ -92,11 +92,11 @@ Expand and align project documentation with submission expectations before imple
 
 ### What was generated/changed
 
-- Rewrote and expanded `docs/ai-usage.md` with Step 1/Step 2 context, validation narrative, corrections (`TaskItemStatus`, `Result`), forbidden-deps checklist commands, and planned JWT/SignalR validation notes.
-- Expanded `docs/architecture.md` with **Current implementation status**, planned auth/data/notification flows (diagrams), and careful wording not to overstate implementation.
-- Expanded `docs/presentation.md` with overview, architecture/testing summaries, GenAI summary pointer, trade-offs, future improvements.
-- Expanded `docs/design-decisions.md` with JWT, FluentValidation, controllers, Result modeling, test tooling, Docker, SignalR stack rationale.
-- Added historical clarification under Step 1 in `docs/development-log.md` regarding superseded TODOs.
+- Rewrote and expanded `docs/process-ai-usage.md` with Step 1/Step 2 context, validation narrative, corrections (`TaskItemStatus`, `Result`), forbidden-deps checklist commands, and planned JWT/SignalR validation notes.
+- Expanded `docs/guide-architecture.md` with **Current implementation status**, planned auth/data/notification flows (diagrams), and careful wording not to overstate implementation.
+- Expanded `docs/guide-presentation.md` with overview, architecture/testing summaries, GenAI summary pointer, trade-offs, future improvements.
+- Expanded `docs/guide-design-decisions.md` with JWT, FluentValidation, controllers, Result modeling, test tooling, Docker, SignalR stack rationale.
+- Added historical clarification under Step 1 in `docs/process-development-log.md` regarding superseded TODOs.
 
 ### Validation performed
 
@@ -118,7 +118,7 @@ Expose REST endpoints for auth (register/login), health, and authenticated task 
 - **Validation:** FluentValidation validators for `RegisterRequest`, `LoginRequest`, `CreateTaskRequest`, `UpdateTaskRequest`; automatic validation enabled.
 - **Middleware:** `CorrelationIdMiddleware` (`X-Correlation-ID`), `ExceptionHandlingMiddleware` (JSON 500 body).
 - **API wiring:** JSON enums as strings; database initializer runs immediately after `WebApplication` build; CORS policy `AngularDev` from `Cors:Origins` or default `http://localhost:4200`.
-- **Docs:** `README.md` route table; `docs/architecture.md` status and auth/data sections updated to reflect implemented HTTP surface.
+- **Docs:** `README.md` route table; `docs/guide-architecture.md` status and auth/data sections updated to reflect implemented HTTP surface.
 
 ### Technical decisions
 
@@ -159,7 +159,7 @@ Implement the Infrastructure layer: parameterized ADO.NET repositories, optional
 - **Security:** `PasswordHasher`, `JwtTokenService`.
 - **Composition:** `DependencyInjection.AddInfrastructure` registers repositories, services, initializer.
 - **Api:** `Program.cs` runs initializer on startup, enables authentication/authorization middleware; minimal `/` health-style JSON until controllers exist.
-- **Docs/README:** `README.md` demo credentials + `dotnet run`; `docs/architecture.md` status table updated for honesty.
+- **Docs/README:** `README.md` demo credentials + `dotnet run`; `docs/guide-architecture.md` status table updated for honesty.
 
 ### Technical decisions
 
@@ -184,17 +184,17 @@ Cursor implemented the Infrastructure and startup wiring described above.
 
 ## 2026-05-09 — Session checkpoint note (before PC restart)
 
-Added `docs/session-checkpoint.md`: Step 3 remains **uncommitted** until local Docker + `dotnet run` verification; lists resume steps, suggested commit message, and Step 4 pointer. Solution builds clean (`dotnet build`) at time of note.
+Added `docs/process-session-checkpoint.md`: Step 3 remains **uncommitted** until local Docker + `dotnet run` verification; lists resume steps, suggested commit message, and Step 4 pointer. Solution builds clean (`dotnet build`) at time of note.
 
 ## 2026-05-09 — End-of-day handoff
 
 ### What was requested
 
-Refresh **`docs/session-checkpoint.md`** so work can resume tomorrow with a clear summary, git pointer, and next milestones.
+Refresh **`docs/process-session-checkpoint.md`** so work can resume tomorrow with a clear summary, git pointer, and next milestones.
 
 ### What was generated/changed
 
-- **`docs/session-checkpoint.md`:** evening wrap (Steps 3–4 + Swagger on `master`, commit **`34d2aba`**), tomorrow startup steps, reminder that persistence is **ADO.NET only** (no EF/Dapper/MediatR), config vs hardcoded demo seed note.
+- **`docs/process-session-checkpoint.md`:** evening wrap (Steps 3–4 + Swagger on `master`, commit **`34d2aba`**), tomorrow startup steps, reminder that persistence is **ADO.NET only** (no EF/Dapper/MediatR), config vs hardcoded demo seed note.
 
 ### Validation performed
 
@@ -212,9 +212,9 @@ Close out submission readiness: verify **forbidden dependencies** (no EF Core, D
 
 ### What was generated/changed
 
-- **`docs/testing-and-requirements.md`:** consolidated requirement table (from README/presentation), full inventory of **8** unit + **12** integration tests with file references, manual/smoke gaps, repeatable forbidden-deps commands with **2026-05-10** grep/`dotnet list` results, optional CI / server-side read-note.
-- **`docs/architecture.md`:** status table updated (Angular, SignalR, integration tests **implemented**); notification section marked **implemented**; ADO.NET constraint wording fixed (“once implemented” removed).
-- **`docs/presentation.md`:** overview, API line, demo step 7, testing table, trade-offs row for SignalR, smoke checklist, and talking points updated to match current codebase.
+- **`docs/reference-testing-requirements.md`:** consolidated requirement table (from README/presentation), full inventory of **8** unit + **12** integration tests with file references, manual/smoke gaps, repeatable forbidden-deps commands with **2026-05-10** grep/`dotnet list` results, optional CI / server-side read-note.
+- **`docs/guide-architecture.md`:** status table updated (Angular, SignalR, integration tests **implemented**); notification section marked **implemented**; ADO.NET constraint wording fixed (“once implemented” removed).
+- **`docs/guide-presentation.md`:** overview, API line, demo step 7, testing table, trade-offs row for SignalR, smoke checklist, and talking points updated to match current codebase.
 - **`README.md`:** Realtime paragraph mentions notification center; Documentation list links the new testing doc.
 
 ### Validation performed
@@ -231,4 +231,24 @@ Close out submission readiness: verify **forbidden dependencies** (no EF Core, D
 ### AI involvement
 
 Cursor drafted the traceability document and updated related docs per the collaborator’s checklist; no product code changes in this entry.
+
+## 2026-05-10 — Documentation layout: `brief/` + naming convention
+
+### What was requested
+
+Centralize exercise prompts with project docs; replace the misspelled `stater-documents` folder; adopt consistent names (`guide-*`, `reference-*`, `process-*`).
+
+### What was generated/changed
+
+- **`docs/brief/`** — English and Portuguese exercise specs (`ballast-lane-task-manager.en.txt`, `.pt-BR.txt`); removed **`docs/stater-documents/`**.
+- **Renamed** project markdown files: `guide-architecture.md`, `guide-design-decisions.md`, `guide-presentation.md`, `reference-credentials.md`, `reference-testing-requirements.md`, `process-ai-usage.md`, `process-development-log.md`, `process-session-checkpoint.md`.
+- **`docs/README.md`** — table of contents; **`README.md`** Documentation section updated with links.
+
+### Validation performed
+
+- Grep for legacy `docs/architecture.md` paths in active docs (should find only `guide-*` targets); spot-check links.
+
+### AI involvement
+
+Cursor performed moves/renames and link updates.
 

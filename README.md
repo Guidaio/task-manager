@@ -98,7 +98,7 @@ After the database initializer runs (API startup with SQL Server available), a d
 
 Fixed demo user id (for reference): `11111111-1111-1111-1111-111111111111`. Two sample tasks are seeded when that user has no tasks.
 
-**Full dev reference** (SQL `sa`, ports, JWT, SignalR, quick checklist): see [`docs/credentials-reference.md`](docs/credentials-reference.md).
+**Full dev reference** (SQL `sa`, ports, JWT, SignalR, quick checklist): see [`docs/reference-credentials.md`](docs/reference-credentials.md).
 
 Start SQL Server:
 
@@ -143,10 +143,11 @@ Browse `http://localhost:4200`. CORS allows this origin against the API.
 
 ## Documentation
 
-- [`docs/testing-and-requirements.md`](docs/testing-and-requirements.md) — requirements traceability, test inventory, forbidden-deps checks, known gaps
-- [`docs/credentials-reference.md`](docs/credentials-reference.md) — local URLs, demo user, SQL, JWT (dev)
-- `docs/architecture.md`
-- `docs/design-decisions.md`
-- `docs/ai-usage.md`
-- `docs/development-log.md`
-- `docs/presentation.md`
+- [`docs/README.md`](docs/README.md) — index of all documentation files and naming convention
+- [`docs/reference-testing-requirements.md`](docs/reference-testing-requirements.md) — requirements traceability, test inventory, forbidden-deps checks, known gaps
+- [`docs/reference-credentials.md`](docs/reference-credentials.md) — local URLs, demo user, SQL, JWT (dev)
+- [`docs/guide-architecture.md`](docs/guide-architecture.md)
+- [`docs/guide-design-decisions.md`](docs/guide-design-decisions.md)
+- [`docs/process-ai-usage.md`](docs/process-ai-usage.md)
+- [`docs/process-development-log.md`](docs/process-development-log.md)
+- [`docs/guide-presentation.md`](docs/guide-presentation.md)
