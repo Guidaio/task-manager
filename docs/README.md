@@ -7,7 +7,7 @@ All project documentation lives under **`docs/`**, with a short naming conventio
 | **`guide-`** | Deep dives for reviewers and demos (architecture, decisions, presentation notes). |
 | **`reference-`** | Quick lookup (credentials, testing vs requirements). |
 | **`process-`** | How the work was done (AI usage, development log, session checkpoints). |
-| **`brief/`** | Original exercise prompts (EN + pt-BR). |
+| **`brief/`** | Exercise prompts (txt) + **official PDFs/DOCX** under `brief/source/` (see below). |
 
 ## Contents
 
@@ -15,6 +15,9 @@ All project documentation lives under **`docs/`**, with a short naming conventio
 |------|-------------|
 | [brief/ballast-lane-task-manager.en.txt](brief/ballast-lane-task-manager.en.txt) | Exercise specification (English). |
 | [brief/ballast-lane-task-manager.pt-BR.txt](brief/ballast-lane-task-manager.pt-BR.txt) | Exercise specification (Portuguese). |
+| [brief/source/ballast-lane-technical-exercise-v5.pdf](brief/source/ballast-lane-technical-exercise-v5.pdf) | Ballast Lane technical interview exercise (PDF). |
+| [brief/source/ballast-lane-job-description-senior-net.pdf](brief/source/ballast-lane-job-description-senior-net.pdf) | Senior .NET engineer role description (PDF). |
+| [brief/source/ballast-lane-design-thought-process.docx](brief/source/ballast-lane-design-thought-process.docx) | Early design / thought-process notes (DOCX). |
 | [guide-architecture.md](guide-architecture.md) | Clean Architecture status, diagrams, data and auth flows. |
 | [guide-design-decisions.md](guide-design-decisions.md) | Rationale (JWT, validation, ADO.NET, SignalR, etc.). |
 | [guide-presentation.md](guide-presentation.md) | Demo script and talking points. |

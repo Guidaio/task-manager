@@ -6,7 +6,7 @@ This document maps **what the exercise asks for** (as stated in-repo) to **how w
 
 - [`README.md`](../README.md) — stack, restrictions, core checklist, HTTP surface, smoke checklist.
 - [`guide-presentation.md`](guide-presentation.md) — demo outline and submission framing (Ballast Lane–style Senior .NET exercise).
-- **Note:** The original external job posting is **not** in this repository. Requirements here are derived only from those files and the implemented codebase.
+- **Note:** Authoritative PDFs from Ballast Lane live in [`brief/source/`](brief/source/). The original external job posting text is also captured there. Requirements in this doc still prioritize implemented code + [`README.md`](../README.md).
 
 ---
 

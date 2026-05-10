@@ -252,3 +252,22 @@ Centralize exercise prompts with project docs; replace the misspelled `stater-do
 
 Cursor performed moves/renames and link updates.
 
+## 2026-05-10 — Move root `starter-documents/` into `docs/brief/source/`
+
+### What was requested
+
+Consolidate the remaining **`starter-documents/`** folder (PDFs + DOCX) with the rest of documentation.
+
+### What was generated/changed
+
+- **`docs/brief/source/`** — `ballast-lane-technical-exercise-v5.pdf`, `ballast-lane-job-description-senior-net.pdf`, `ballast-lane-design-thought-process.docx` (renamed from long filenames for clarity).
+- Removed empty **`starter-documents/`** at repo root.
+- **`docs/README.md`** and **`reference-testing-requirements.md`** updated to point at official brief materials.
+
+### Validation performed
+
+- `git status` — expected renames only.
+
+### AI involvement
+
+Cursor moved tracked binaries with `git mv` and updated doc links.
