@@ -340,13 +340,50 @@ button.nav-link:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   padding: 1rem 1rem 0.85rem;
   border-bottom: 1px solid var(--tm-border);
+}
+
+.drawer-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.drawer-action {
+  font-size: 0.8rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--tm-text);
+}
+
+.drawer-action:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--tm-muted) 12%, var(--tm-surface));
+}
+
+.drawer-action:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.drawer-retention-hint {
+  margin: 0;
+  padding: 0.75rem 1.25rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--tm-muted);
+  line-height: 1.35;
 }
 
 .drawer-header h2 {
   margin: 0;
   font-size: 1.1rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .drawer-close {

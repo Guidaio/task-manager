@@ -9,6 +9,8 @@ namespace TaskManager.Infrastructure.Persistence;
 
 public sealed class NotificationRepository : INotificationRepository
 {
+    private static readonly TimeSpan ListRetention = TimeSpan.FromDays(30);
+
     private readonly IDbConnectionFactory _connections;
 
     public NotificationRepository(IDbConnectionFactory connections)
@@ -60,6 +62,18 @@ public sealed class NotificationRepository : INotificationRepository
         await using var connection = _connections.CreateConnection();
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
+        var cutoff = DateTime.UtcNow - ListRetention;
+        await using (var pruneCmd = connection.CreateCommand())
+        {
+            pruneCmd.CommandText = """
+                DELETE FROM dbo.Notifications
+                WHERE UserId = @UserId AND CreatedAtUtc < @Cutoff;
+                """;
+            pruneCmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+            pruneCmd.Parameters.Add(new SqlParameter("@Cutoff", SqlDbType.DateTime2) { Value = cutoff });
+            await pruneCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         await using var command = connection.CreateCommand();
         command.CommandText = """
             SELECT Id, UserId, TaskId, Message, Type, IsRead, CreatedAtUtc
@@ -106,6 +120,21 @@ public sealed class NotificationRepository : INotificationRepository
             """;
 
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<int> DeleteAllForUserAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        await using var connection = _connections.CreateConnection();
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            DELETE FROM dbo.Notifications
+            WHERE UserId = @UserId;
+            """;
+        command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+
+        return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private static Notification Map(SqlDataReader reader)

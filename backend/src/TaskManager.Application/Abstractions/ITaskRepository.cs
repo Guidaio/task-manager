@@ -1,3 +1,4 @@
+using TaskManager.Application.Dtos.Tasks;
 using TaskManager.Domain.Entities;
 using TaskManager.Domain.Enums;
 
@@ -10,6 +11,9 @@ public interface ITaskRepository
         TaskItemStatus? status,
         int page,
         int pageSize,
+        TaskListSortBy sortBy,
+        bool descending,
+        string? search,
         CancellationToken cancellationToken);
 
     Task<TaskItem> CreateAsync(TaskItem task, CancellationToken cancellationToken);

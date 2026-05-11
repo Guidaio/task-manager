@@ -112,8 +112,11 @@ Response body: `{ "items": [ ... TaskDto ... ], "totalCount", "page", "pageSize"
 | `status` | *(none)* | Optional. `Pending`, `InProgress`, `Completed`, or `Cancelled` (case-insensitive). Omit to list all statuses. |
 | `page` | `1` | 1-based; values less than 1 are treated as 1. |
 | `pageSize` | `25` | Clamped to **1–100** (large values capped at 100). |
+| `sort` | `created` | `created` (default), `title`, `status`, or `due`. |
+| `order` | `desc` when `sort=created`; `asc` otherwise | `asc` or `desc`. Omit to use that default for the selected sort. |
+| `search` | *(none)* | Optional. Case-insensitive substring match on **title** or **description** (max **200** characters). |
 
-Example: `/api/tasks?status=Completed&page=1&pageSize=10`
+Example: `/api/tasks?status=Completed&page=1&pageSize=10&sort=title&order=asc&search=invoice`
 
 **Task create/update/delete** enqueue notifications that are stored in SQL and pushed to the signed-in user over SignalR (see below).
 

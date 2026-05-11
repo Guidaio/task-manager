@@ -25,6 +25,9 @@ public sealed class TasksController : ControllerBase
         [FromQuery] string? status,
         [FromQuery] int? page,
         [FromQuery] int? pageSize,
+        [FromQuery] string? sort,
+        [FromQuery] string? order,
+        [FromQuery] string? search,
         CancellationToken cancellationToken)
     {
         var userId = ResolveUserIdOrUnauthorized();
@@ -45,7 +48,10 @@ public sealed class TasksController : ControllerBase
         if (ps > 100)
             ps = 100;
 
-        var result = await _taskService.ListAsync(userId.Value, statusFilter, p, ps, cancellationToken);
+        if (!TryParseTaskListSort(sort, order, out var sortBy, out var descending, out var sortError))
+            return BadRequest(new { error = sortError });
+
+        var result = await _taskService.ListAsync(userId.Value, statusFilter, p, ps, sortBy, descending, search, cancellationToken);
         if (!result.Succeeded)
             return BadRequest(new { error = result.Error });
 
@@ -122,5 +128,54 @@ public sealed class TasksController : ControllerBase
             return NotFound(new { error = result.Error });
 
         return BadRequest(new { error = result.Error });
+    }
+
+    private static bool TryParseTaskListSort(
+        string? sort,
+        string? order,
+        out TaskListSortBy sortBy,
+        out bool descending,
+        out string? error)
+    {
+        error = null;
+        sortBy = TaskListSortBy.CreatedAtUtc;
+        descending = true;
+
+        var key = sort?.Trim().ToLowerInvariant();
+        if (string.IsNullOrEmpty(key) || key == "created")
+            sortBy = TaskListSortBy.CreatedAtUtc;
+        else if (key == "title")
+            sortBy = TaskListSortBy.Title;
+        else if (key == "status")
+            sortBy = TaskListSortBy.Status;
+        else if (key == "due")
+            sortBy = TaskListSortBy.DueDateUtc;
+        else
+        {
+            error = "Invalid sort. Use created, title, status, or due.";
+            return false;
+        }
+
+        var o = order?.Trim().ToLowerInvariant();
+        if (string.IsNullOrEmpty(o))
+        {
+            descending = sortBy == TaskListSortBy.CreatedAtUtc;
+            return true;
+        }
+
+        if (o == "asc")
+        {
+            descending = false;
+            return true;
+        }
+
+        if (o == "desc")
+        {
+            descending = true;
+            return true;
+        }
+
+        error = "Invalid order. Use asc or desc.";
+        return false;
     }
 }

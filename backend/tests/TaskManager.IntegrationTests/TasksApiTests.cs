@@ -229,6 +229,122 @@ public sealed class TasksApiTests
         Assert.Equal(2, body2.Page);
     }
 
+    [Fact]
+    public async Task List_tasks_invalid_sort_returns_bad_request()
+    {
+        var token = await LoginDemoAsync();
+        using var client = _fixture.Factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await client.GetAsync(new Uri("/api/tasks?sort=notacolumn", UriKind.Relative));
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task List_tasks_invalid_order_returns_bad_request()
+    {
+        var token = await LoginDemoAsync();
+        using var client = _fixture.Factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await client.GetAsync(new Uri("/api/tasks?sort=title&order=zigzag", UriKind.Relative));
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task List_tasks_sorts_by_title_ascending()
+    {
+        var email = $"sort-title-{Guid.NewGuid():N}@taskmanager.test";
+        var token = await RegisterAndLoginAsync(email);
+        using var client = _fixture.Factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var z = await client.PostAsJsonAsync(
+            new Uri("/api/tasks", UriKind.Relative),
+            new CreateTaskRequest { Title = "Zebra sort", Status = TaskItemStatus.Pending },
+            TestJson.Options);
+        z.EnsureSuccessStatusCode();
+        var a = await client.PostAsJsonAsync(
+            new Uri("/api/tasks", UriKind.Relative),
+            new CreateTaskRequest { Title = "Alpha sort", Status = TaskItemStatus.Pending },
+            TestJson.Options);
+        a.EnsureSuccessStatusCode();
+
+        var response = await client.GetAsync(
+            new Uri("/api/tasks?sort=title&order=asc&pageSize=50", UriKind.Relative));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<TaskListResponseDto>(TestJson.Options);
+        Assert.NotNull(body);
+        Assert.Equal(2, body!.TotalCount);
+        Assert.Equal("Alpha sort", body.Items[0].Title);
+        Assert.Equal("Zebra sort", body.Items[1].Title);
+    }
+
+    [Fact]
+    public async Task List_tasks_search_filters_title_or_description()
+    {
+        var email = $"search-{Guid.NewGuid():N}@taskmanager.test";
+        var token = await RegisterAndLoginAsync(email);
+        using var client = _fixture.Factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var t1 = await client.PostAsJsonAsync(
+            new Uri("/api/tasks", UriKind.Relative),
+            new CreateTaskRequest { Title = "UniqueAlphaTitle", Status = TaskItemStatus.Pending },
+            TestJson.Options);
+        t1.EnsureSuccessStatusCode();
+        var t2 = await client.PostAsJsonAsync(
+            new Uri("/api/tasks", UriKind.Relative),
+            new CreateTaskRequest
+            {
+                Title = "Other",
+                Description = "UniqueBetaDesc",
+                Status = TaskItemStatus.Pending,
+            },
+            TestJson.Options);
+        t2.EnsureSuccessStatusCode();
+        var t3 = await client.PostAsJsonAsync(
+            new Uri("/api/tasks", UriKind.Relative),
+            new CreateTaskRequest { Title = "No match here", Status = TaskItemStatus.Pending },
+            TestJson.Options);
+        t3.EnsureSuccessStatusCode();
+
+        var both = await client.GetAsync(
+            new Uri("/api/tasks?search=Unique&sort=title&order=asc&pageSize=50", UriKind.Relative));
+        Assert.Equal(HttpStatusCode.OK, both.StatusCode);
+        var bodyBoth = await both.Content.ReadFromJsonAsync<TaskListResponseDto>(TestJson.Options);
+        Assert.NotNull(bodyBoth);
+        Assert.Equal(2, bodyBoth!.TotalCount);
+
+        var onlyBeta = await client.GetAsync(
+            new Uri("/api/tasks?search=UniqueBeta&sort=title&order=asc&pageSize=50", UriKind.Relative));
+        Assert.Equal(HttpStatusCode.OK, onlyBeta.StatusCode);
+        var bodyOnlyBeta = await onlyBeta.Content.ReadFromJsonAsync<TaskListResponseDto>(TestJson.Options);
+        Assert.NotNull(bodyOnlyBeta);
+        Assert.Single(bodyOnlyBeta!.Items);
+        Assert.Equal("Other", bodyOnlyBeta.Items[0].Title);
+
+        var emptySearch = await client.GetAsync(
+            new Uri("/api/tasks?search=zzzznotfound12345", UriKind.Relative));
+        Assert.Equal(HttpStatusCode.OK, emptySearch.StatusCode);
+        var emptyBody = await emptySearch.Content.ReadFromJsonAsync<TaskListResponseDto>(TestJson.Options);
+        Assert.NotNull(emptyBody);
+        Assert.Empty(emptyBody!.Items);
+        Assert.Equal(0, emptyBody.TotalCount);
+    }
+
+    [Fact]
+    public async Task List_tasks_search_too_long_returns_bad_request()
+    {
+        var token = await LoginDemoAsync();
+        using var client = _fixture.Factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var q = new string('x', 201);
+        var response = await client.GetAsync(
+            new Uri($"/api/tasks?search={Uri.EscapeDataString(q)}", UriKind.Relative));
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     private async Task<string> LoginDemoAsync()
     {
         using var client = _fixture.Factory.CreateClient();

@@ -15,6 +15,9 @@ public interface ITaskService
         TaskItemStatus? status,
         int page,
         int pageSize,
+        TaskListSortBy sortBy,
+        bool descending,
+        string? search,
         CancellationToken cancellationToken);
 
     Task<Result<TaskDto>> UpdateAsync(Guid userId, Guid taskId, UpdateTaskRequest request, CancellationToken cancellationToken);

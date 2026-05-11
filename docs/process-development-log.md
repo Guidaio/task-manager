@@ -355,3 +355,40 @@ Polish before a new commit: avoid blocking login/register on SignalR; improve mi
 ### AI involvement
 
 Cursor implemented and smoke-checked the Angular changes.
+
+## 2026-05-10 — Task list column sorting (API + Angular)
+
+### What was requested
+
+Sort tasks by clicking **Title**, **Status**, or **Due** column headers; pagination must stay correct (server-side **ORDER BY**).
+
+### What was generated/changed
+
+- **API:** Query params **`sort`** (`created`, `title`, `status`, `due`) and **`order`** (`asc`/`desc`); SQL uses whitelisted columns + **`Id`** tie-break; invalid sort/order → **400**.
+- **Angular:** Header buttons toggle sort direction; default remains **created** descending; **`TasksService.list`** sends **`sort`** / **`order`**.
+- **Tests:** Three new integration tests; docs test counts **28** (**9** + **19**).
+
+### Validation performed
+
+- **`dotnet build`** on Application, Infrastructure, UnitTests (full solution if API not locking files). **`npm run build`** for frontend.
+
+### AI involvement
+
+Cursor implemented end-to-end and updated traceability docs.
+
+## 2026-05-11 — Task list search + Actions column alignment
+
+### What was requested
+
+Header **Actions** aligned with row buttons; **search** tasks by title/description.
+
+### What was generated/changed
+
+- **API:** Optional **`search`** query on **`GET /api/tasks`** (substring on title or description, parameterized `LIKE` with **`ESCAPE '\'`**); **400** if longer than **200** characters after trim.
+- **Angular:** Debounced **Search** field; **Actions** `<th>` right-aligned to match the action button group.
+- **Tests:** One unit test (search length); two integration tests (search matches + too long).
+- **Docs:** Test totals **31** (**10** + **21**).
+
+### AI involvement
+
+Cursor implemented SQL + UI and refreshed docs tables.

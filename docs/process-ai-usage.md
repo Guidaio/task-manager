@@ -143,6 +143,6 @@ Also inspect `*.csproj` files for `<PackageReference>` entries.
 | Step 3 | ADO.NET repositories, initializer + seed, BCrypt hashing, symmetric JWT issuance + bearer middleware wired at startup. |
 | Step 3 | Notifications FK to `TaskItems` uses **`ON DELETE NO ACTION`** to avoid SQL Server multiple cascade paths. |
 | Step 4 | REST API (auth + tasks + health), FluentValidation, correlation + exception middleware, CORS; **Swagger UI** at `/swagger` in Development with JWT bearer for Try-it-out. |
-| Later | Angular SPA, notifications REST + SignalR, notification mark-read, task list **filter + pagination**, **16** integration tests (**25** total with **9** unit tests); reference **troubleshooting** + **security** docs; **developer manual smoke** before submission (`docs/process-development-log.md`). |
+| Later | Angular SPA, notifications REST + SignalR, notification mark-read, task list **filter + pagination + sort + search**, **21** integration tests (**31** total with **10** unit tests); reference **troubleshooting** + **security** docs; **developer manual smoke** before submission (`docs/process-development-log.md`). |
 
 Further rows should be appended as the project evolves.

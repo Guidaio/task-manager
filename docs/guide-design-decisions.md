@@ -69,7 +69,7 @@ Application services return **`Result`** / **`Result<T>`** for expected failures
 
 - **xUnit:** Standard, CI-friendly test runner for .NET with good tooling defaults.
 - **Moq:** Isolates Application services from SQL/JWT while proving **business rules** quickly (`TaskManager.UnitTests` mocks repositories and collaborators).
-- **`WebApplicationFactory`:** (**implemented** in `TaskManager.IntegrationTests`) Spins up the API **in-process** with test configuration and **real SQL Server** (see factory/setup and `docs/reference-testing-requirements.md`) to validate middleware, JWT, routing, and ADO.NET repositories together — **16** integration tests complement **9** unit tests.
+- **`WebApplicationFactory`:** (**implemented** in `TaskManager.IntegrationTests`) Spins up the API **in-process** with test configuration and **real SQL Server** (see factory/setup and `docs/reference-testing-requirements.md`) to validate middleware, JWT, routing, and ADO.NET repositories together — **21** integration tests complement **10** unit tests.
 
 ## Docker Compose
 

@@ -8,11 +8,21 @@ export class TasksService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/api/tasks`;
 
-  list(options?: { status?: string; page?: number; pageSize?: number }) {
+  list(options?: {
+    status?: string;
+    page?: number;
+    pageSize?: number;
+    sort?: 'created' | 'title' | 'status' | 'due';
+    order?: 'asc' | 'desc';
+    search?: string;
+  }) {
     let params = new HttpParams();
     if (options?.status) params = params.set('status', options.status);
     if (options?.page != null) params = params.set('page', String(options.page));
     if (options?.pageSize != null) params = params.set('pageSize', String(options.pageSize));
+    if (options?.sort) params = params.set('sort', options.sort);
+    if (options?.order) params = params.set('order', options.order);
+    if (options?.search) params = params.set('search', options.search);
     return this.http.get<PagedTasksResponse>(this.base, { params });
   }
 

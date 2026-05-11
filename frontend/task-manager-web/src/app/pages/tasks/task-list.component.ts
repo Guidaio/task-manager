@@ -1,12 +1,17 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { Subject, switchMap } from 'rxjs';
 import { NotificationCenterService } from '../../core/notifications/notification-center.service';
 import type { TaskDto, TaskItemStatus } from '../../core/tasks/task.models';
 import { TasksService } from '../../core/tasks/tasks.service';
 
 const FLASH_KEY = 'taskManager.flash';
 const FLASH_BANNER_KEY = 'taskManager.flashBanner';
+
+type TaskSortKey = 'created' | 'title' | 'status' | 'due';
 
 function apiMessage(err: HttpErrorResponse, fallback: string): string {
   const body = err.error;
@@ -18,13 +23,16 @@ function apiMessage(err: HttpErrorResponse, fallback: string): string {
 
 @Component({
   selector: 'app-task-list',
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   templateUrl: './task-list.component.html',
   styleUrl: './task-list.component.scss',
 })
 export class TaskListComponent {
   private readonly tasksService = inject(TasksService);
   private readonly notificationCenter = inject(NotificationCenterService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly load$ = new Subject<void>();
+  private searchDebounceId: ReturnType<typeof setTimeout> | undefined;
 
   protected readonly tasks = signal<TaskDto[]>([]);
   protected readonly loading = signal(true);
@@ -35,6 +43,9 @@ export class TaskListComponent {
   protected readonly statusFilter = signal<TaskItemStatus | ''>('');
   protected readonly page = signal(1);
   protected readonly pageSize = signal(25);
+  /** Default: newest first (created desc), matching API defaults. */
+  protected readonly sortColumn = signal<TaskSortKey>('created');
+  protected readonly sortDescending = signal(true);
 
   protected readonly totalPages = computed(() => {
     const tc = this.totalCount();
@@ -52,15 +63,62 @@ export class TaskListComponent {
 
   protected readonly pageSizeOptions = [10, 25, 50, 100] as const;
 
+  /** Plaintext in the search box (updates immediately). */
+  protected readonly searchText = signal('');
+  /** Trimmed value sent to the API after debounce. */
+  protected readonly searchQuery = signal('');
+
   protected readonly emptyMessage = computed(() => {
     if (this.page() > 1 && this.tasks().length === 0) return 'No tasks on this page.';
     if (this.statusFilter() !== '') return 'No tasks match this filter.';
+    if (this.searchQuery() !== '') return 'No tasks match your search.';
     return 'No tasks yet. Create one to get started.';
   });
 
   constructor() {
+    this.destroyRef.onDestroy(() => {
+      if (this.searchDebounceId !== undefined) {
+        clearTimeout(this.searchDebounceId);
+      }
+    });
+
+    this.load$
+      .pipe(
+        switchMap(() => {
+          this.loading.set(true);
+          this.error.set(null);
+          const st = this.statusFilter();
+          return this.tasksService.list({
+            status: st || undefined,
+            page: this.page(),
+            pageSize: this.pageSize(),
+            sort: this.sortColumn(),
+            order: this.sortDescending() ? 'desc' : 'asc',
+            search: this.searchQuery() ? this.searchQuery() : undefined,
+          });
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe({
+        next: (res) => {
+          this.tasks.set(res.items);
+          this.totalCount.set(res.totalCount);
+          this.pageSize.set(res.pageSize);
+          this.loading.set(false);
+          this.error.set(null);
+        },
+        error: (err: unknown) => {
+          this.loading.set(false);
+          if (err instanceof HttpErrorResponse) {
+            this.error.set(apiMessage(err, 'Could not load tasks.'));
+          } else {
+            this.error.set('Could not load tasks.');
+          }
+        },
+      });
+
     this.consumeFlashFromStorage();
-    this.reload();
+    this.load$.next();
   }
 
   private consumeFlashFromStorage(): void {
@@ -89,11 +147,42 @@ export class TaskListComponent {
     this.reload();
   }
 
-  protected onPageSizeChange(event: Event): void {
-    const v = Number((event.target as HTMLSelectElement).value);
-    this.pageSize.set(Number.isFinite(v) ? v : 25);
+  protected onSearchInput(event: Event): void {
+    const v = (event.target as HTMLInputElement).value;
+    this.searchText.set(v);
+    if (this.searchDebounceId !== undefined) {
+      clearTimeout(this.searchDebounceId);
+    }
+    this.searchDebounceId = setTimeout(() => {
+      this.searchDebounceId = undefined;
+      this.searchQuery.set(v.trim());
+      this.page.set(1);
+      this.reload();
+    }, 320);
+  }
+
+  protected onSortClick(column: 'title' | 'status' | 'due'): void {
+    if (this.sortColumn() === column) {
+      this.sortDescending.update((d) => !d);
+    } else {
+      this.sortColumn.set(column);
+      this.sortDescending.set(false);
+    }
     this.page.set(1);
     this.reload();
+  }
+
+  protected sortArrow(column: TaskSortKey): string {
+    if (this.sortColumn() !== column) return '';
+    return this.sortDescending() ? ' \u2193' : ' \u2191';
+  }
+
+  /** Binds reliably to `<select>`; `[value]` alone can desync the visible option from `pageSize()`. */
+  protected onPageSizeNgModelChange(raw: string | number): void {
+    const v = typeof raw === 'string' ? Number.parseInt(raw, 10) : raw;
+    this.pageSize.set(Number.isFinite(v) && v > 0 ? v : 25);
+    this.page.set(1);
+    this.load$.next();
   }
 
   protected prevPage(): void {
@@ -109,26 +198,7 @@ export class TaskListComponent {
   }
 
   protected reload(): void {
-    this.loading.set(true);
-    this.error.set(null);
-    const st = this.statusFilter();
-    this.tasksService
-      .list({
-        status: st || undefined,
-        page: this.page(),
-        pageSize: this.pageSize(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.tasks.set(res.items);
-          this.totalCount.set(res.totalCount);
-          this.loading.set(false);
-        },
-        error: (err: HttpErrorResponse) => {
-          this.loading.set(false);
-          this.error.set(apiMessage(err, 'Could not load tasks.'));
-        },
-      });
+    this.load$.next();
   }
 
   protected statusLabel(s: string): string {

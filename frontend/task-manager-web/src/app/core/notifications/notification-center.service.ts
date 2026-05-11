@@ -15,6 +15,7 @@ export class NotificationCenterService {
   readonly drawerOpen = signal(false);
   readonly items = signal<NotificationRecord[]>([]);
   readonly loading = signal(false);
+  readonly clearing = signal(false);
   readonly loadError = signal<string | null>(null);
 
   readonly unreadCount = computed(() => this.items().filter((n) => !n.isRead).length);
@@ -74,6 +75,23 @@ export class NotificationCenterService {
   closeDrawer(): void {
     this.drawerOpen.set(false);
     void this.markAllCurrentReadAsync();
+  }
+
+  async clearAllPersisted(): Promise<void> {
+    if (!this.tokenStore.token() || this.items().length === 0) return;
+    const ok = globalThis.confirm('Remove all notifications? This cannot be undone.');
+    if (!ok) return;
+
+    this.clearing.set(true);
+    this.loadError.set(null);
+    try {
+      await firstValueFrom(this.http.delete(`${environment.apiUrl}/api/notifications`));
+      this.items.set([]);
+    } catch {
+      this.loadError.set('Could not clear notifications.');
+    } finally {
+      this.clearing.set(false);
+    }
   }
 
   private async markAllCurrentReadAsync(): Promise<void> {

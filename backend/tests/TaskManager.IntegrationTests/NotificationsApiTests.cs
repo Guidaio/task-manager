@@ -27,6 +27,14 @@ public sealed class NotificationsApiTests
     }
 
     [Fact]
+    public async Task Clear_notifications_without_auth_returns_unauthorized()
+    {
+        using var client = _fixture.Factory.CreateClient();
+        var response = await client.DeleteAsync(new Uri("/api/notifications", UriKind.Relative));
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task List_notifications_with_auth_returns_ok()
     {
         var token = await RegisterAndLoginAsync($"n-{Guid.NewGuid():N}@taskmanager.test");
@@ -112,6 +120,45 @@ public sealed class NotificationsApiTests
         var listItems = await listAfter.Content.ReadFromJsonAsync<List<NotificationDto>>(TestJson.Options);
         var updated = listItems!.First(n => n.Id == note.Id);
         Assert.True(updated.IsRead);
+    }
+
+    [Fact]
+    public async Task Clear_notifications_removes_all_rows_for_user()
+    {
+        var token = await RegisterAndLoginAsync($"nclear-{Guid.NewGuid():N}@taskmanager.test");
+        using var client = _fixture.Factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var createResp = await client.PostAsJsonAsync(
+            new Uri("/api/tasks", UriKind.Relative),
+            new CreateTaskRequest { Title = "For clear test", Status = TaskItemStatus.Pending },
+            TestJson.Options);
+        createResp.EnsureSuccessStatusCode();
+
+        NotificationDto? note = null;
+        for (var i = 0; i < 20; i++)
+        {
+            await Task.Delay(150);
+            var listResp = await client.GetAsync(new Uri("/api/notifications", UriKind.Relative));
+            listResp.EnsureSuccessStatusCode();
+            var items = await listResp.Content.ReadFromJsonAsync<List<NotificationDto>>(TestJson.Options);
+            note = items?.FirstOrDefault(n =>
+                n.Message.Contains("For clear test", StringComparison.Ordinal) &&
+                n.Message.Contains("created", StringComparison.OrdinalIgnoreCase));
+            if (note is not null)
+                break;
+        }
+
+        Assert.NotNull(note);
+
+        var clearResp = await client.DeleteAsync(new Uri("/api/notifications", UriKind.Relative));
+        Assert.Equal(HttpStatusCode.NoContent, clearResp.StatusCode);
+
+        var listAfter = await client.GetAsync(new Uri("/api/notifications", UriKind.Relative));
+        listAfter.EnsureSuccessStatusCode();
+        var listItems = await listAfter.Content.ReadFromJsonAsync<List<NotificationDto>>(TestJson.Options);
+        Assert.NotNull(listItems);
+        Assert.DoesNotContain(listItems!, n => n.Id == note!.Id);
     }
 
     private async Task<string> RegisterAndLoginAsync(string email)

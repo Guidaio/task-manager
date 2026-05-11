@@ -80,6 +80,9 @@ public sealed class TaskService : ITaskService
         TaskItemStatus? status,
         int page,
         int pageSize,
+        TaskListSortBy sortBy,
+        bool descending,
+        string? search,
         CancellationToken cancellationToken)
     {
         if (userId == Guid.Empty)
@@ -92,8 +95,12 @@ public sealed class TaskService : ITaskService
         if (pageSize > 100)
             pageSize = 100;
 
+        string? normalizedSearch = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
+        if (normalizedSearch is { Length: > 200 })
+            return Result<TaskListResponseDto>.Fail("Search text must be 200 characters or fewer.");
+
         var (items, total) = await _tasks
-            .ListByUserIdPagedAsync(userId, status, page, pageSize, cancellationToken)
+            .ListByUserIdPagedAsync(userId, status, page, pageSize, sortBy, descending, normalizedSearch, cancellationToken)
             .ConfigureAwait(false);
         var dtos = items.Select(ToDto).ToArray();
         return Result<TaskListResponseDto>.Ok(

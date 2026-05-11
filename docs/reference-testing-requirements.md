@@ -37,7 +37,7 @@ dotnet test .\backend\TaskManager.sln
 
 If **`dotnet test` fails with MSB3027 / “file is being used by another process”**, stop any running **`TaskManager.Api`** (or other processes locking `bin\Debug` under the API project), then run tests again.
 
-**Latest verification (local):** **25** tests — **9** unit (`TaskManager.UnitTests`), **16** integration (`TaskManager.IntegrationTests`), all passing when SQL is up and file locks are avoided.
+**Latest verification (local):** **31** tests — **10** unit (`TaskManager.UnitTests`), **21** integration (`TaskManager.IntegrationTests`), all passing when SQL is up and file locks are avoided.
 
 ### Unit tests (application rules, mocked repositories)
 
@@ -49,6 +49,7 @@ If **`dotnet test` fails with MSB3027 / “file is being used by another process
 | `Create_ShouldFail_WhenTitleIsEmpty` | `TaskServiceTests.cs` | R6 validation |
 | `Create_ShouldFail_WhenStatusIsInvalid` | `TaskServiceTests.cs` | R6 validation |
 | `List_ReturnsPagedDtos_FromRepository` | `TaskServiceTests.cs` | R6 list/paging |
+| `List_ShouldFail_WhenSearchTooLong` | `TaskServiceTests.cs` | R6 list search validation |
 | `Create_ShouldCreateTask_WhenRequestIsValid` | `TaskServiceTests.cs` | R6 create |
 | `Update_ShouldFail_WhenTaskDoesNotBelongToUser` | `TaskServiceTests.cs` | R6 ownership |
 | `Delete_ShouldFail_WhenTaskDoesNotExist` | `TaskServiceTests.cs` | R6 delete |
@@ -69,6 +70,11 @@ If **`dotnet test` fails with MSB3027 / “file is being used by another process
 | `List_tasks_invalid_status_returns_bad_request` | `TasksApiTests.cs` | R6 list validation |
 | `List_tasks_filters_by_status` | `TasksApiTests.cs` | R6 list filter |
 | `List_tasks_pagination_returns_total_and_slice` | `TasksApiTests.cs` | R6 paging |
+| `List_tasks_invalid_sort_returns_bad_request` | `TasksApiTests.cs` | R6 list sort validation |
+| `List_tasks_invalid_order_returns_bad_request` | `TasksApiTests.cs` | R6 list sort validation |
+| `List_tasks_sorts_by_title_ascending` | `TasksApiTests.cs` | R6 list sort |
+| `List_tasks_search_filters_title_or_description` | `TasksApiTests.cs` | R6 list search |
+| `List_tasks_search_too_long_returns_bad_request` | `TasksApiTests.cs` | R6 list search validation |
 | `List_notifications_without_auth_returns_unauthorized` | `NotificationsApiTests.cs` | R9 + R5 |
 | `List_notifications_with_auth_returns_ok` | `NotificationsApiTests.cs` | R9 |
 | `Task_create_eventually_persist_notification` | `NotificationsApiTests.cs` | R9 (DB + async worker) |
