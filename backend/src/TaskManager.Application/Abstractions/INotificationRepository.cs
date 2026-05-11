@@ -10,6 +10,8 @@ public interface INotificationRepository
 
     Task MarkAsReadForUserAsync(Guid userId, IReadOnlyList<Guid> notificationIds, CancellationToken cancellationToken);
 
+    Task<int> DeleteAllForUserAsync(Guid userId, CancellationToken cancellationToken);
+
     /// <summary>
     /// Clears TaskId on notifications so a task row can be deleted (FK uses ON DELETE NO ACTION on TaskId).
     /// </summary>

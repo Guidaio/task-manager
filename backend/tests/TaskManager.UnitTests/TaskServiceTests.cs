@@ -96,16 +96,46 @@ public sealed class TaskServiceTests
             UpdatedAtUtc = DateTime.UtcNow,
         };
         _tasks
-            .Setup(x => x.ListByUserIdPagedAsync(UserId, null, 1, 25, It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListByUserIdPagedAsync(UserId, null, 1, 25, TaskListSortBy.CreatedAtUtc, true, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(([task], 1));
 
-        var result = await sut.ListAsync(UserId, null, 1, 25, CancellationToken.None);
+        var result = await sut.ListAsync(UserId, null, 1, 25, TaskListSortBy.CreatedAtUtc, true, null, CancellationToken.None);
 
         Assert.True(result.Succeeded);
         Assert.Single(result.Value!.Items);
         Assert.Equal(1, result.Value.TotalCount);
         Assert.Equal(1, result.Value.Page);
         Assert.Equal(25, result.Value.PageSize);
+    }
+
+    [Fact]
+    public async Task List_ShouldFail_WhenSearchTooLong()
+    {
+        var sut = CreateSut();
+        var tooLong = new string('a', 201);
+        var result = await sut.ListAsync(
+            UserId,
+            null,
+            1,
+            25,
+            TaskListSortBy.CreatedAtUtc,
+            true,
+            tooLong,
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("Search text must be 200 characters or fewer.", result.Error);
+        _tasks.Verify(
+            x => x.ListByUserIdPagedAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<TaskItemStatus?>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<TaskListSortBy>(),
+                It.IsAny<bool>(),
+                It.IsAny<string?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]

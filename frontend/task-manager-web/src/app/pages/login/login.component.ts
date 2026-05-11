@@ -43,10 +43,12 @@ export class LoginComponent {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: () => {
-          void this.realtime.primeConnection().then(() => {
-            const returnUrl = this.route.snapshot.queryParams['returnUrl'] ?? '/tasks';
-            void this.router.navigateByUrl(returnUrl);
-          });
+          const raw = this.route.snapshot.queryParamMap.get('returnUrl');
+          const returnUrl =
+            raw !== null && raw.startsWith('/') && !raw.startsWith('//') ? raw : '/tasks';
+          void this.router.navigateByUrl(returnUrl);
+          // Do not block navigation on SignalR: hub.start() can hang while auth already succeeded.
+          void this.realtime.primeConnection();
         },
         error: (err: HttpErrorResponse) => {
           this.error.set(apiErrorMessage(err, 'Login failed.'));

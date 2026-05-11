@@ -333,3 +333,87 @@ Commit and open a PR; reduce documentation to what the exercise needs; confirm p
 ### AI involvement
 
 Cursor applied removals/edits and prepared git commit + PR instructions.
+
+## 2026-05-10 — Auth redirect and task 404 UX
+
+### What was requested
+
+Polish before a new commit: avoid blocking login/register on SignalR; improve missing-task UX after manual isolation testing.
+
+### What was generated/changed
+
+- **Login / register:** Navigate immediately after auth succeeds; **`primeConnection()`** runs without gating navigation (fixes stuck sign-in when **`hub.start()`** hangs).
+- **Task edit load:** On **404**, redirect to **`/tasks`** with a flash message styled as an error banner.
+- **Task list:** Flash banners support **success** vs **error** via **`sessionStorage`** key **`taskManager.flashBanner`**.
+- **`angular.json`:** Production **`anyComponentStyle`** budgets relaxed slightly so `ng build` stays clean with current shell SCSS size.
+- **README / troubleshooting:** Earlier pass added **`npm install`** before **`npm start`** and Angular troubleshooting section.
+
+### Validation performed
+
+- **`npm run build`** (frontend). **`dotnet test`** requires stopping the API when DLL copy locks occur (MSB3027).
+
+### AI involvement
+
+Cursor implemented and smoke-checked the Angular changes.
+
+## 2026-05-10 — Task list column sorting (API + Angular)
+
+### What was requested
+
+Sort tasks by clicking **Title**, **Status**, or **Due** column headers; pagination must stay correct (server-side **ORDER BY**).
+
+### What was generated/changed
+
+- **API:** Query params **`sort`** (`created`, `title`, `status`, `due`) and **`order`** (`asc`/`desc`); SQL uses whitelisted columns + **`Id`** tie-break; invalid sort/order → **400**.
+- **Angular:** Header buttons toggle sort direction; default remains **created** descending; **`TasksService.list`** sends **`sort`** / **`order`**.
+- **Tests:** Three new integration tests; docs test counts **28** (**9** + **19**).
+
+### Validation performed
+
+- **`dotnet build`** on Application, Infrastructure, UnitTests (full solution if API not locking files). **`npm run build`** for frontend.
+
+### AI involvement
+
+Cursor implemented end-to-end and updated traceability docs.
+
+## 2026-05-11 — Task list search + Actions column alignment
+
+### What was requested
+
+Header **Actions** aligned with row buttons; **search** tasks by title/description.
+
+### What was generated/changed
+
+- **API:** Optional **`search`** query on **`GET /api/tasks`** (substring on title or description, parameterized `LIKE` with **`ESCAPE '\'`**); **400** if longer than **200** characters after trim.
+- **Angular:** Debounced **Search** field; **Actions** `<th>` right-aligned to match the action button group.
+- **Tests:** One unit test (search length); two integration tests (search matches + too long).
+- **Docs:** Traceability cited **31** (**10** + **21**) at the time of that change; superseded by pre-submission alignment (**33** total; see latest `process-development-log` entry).
+
+### AI involvement
+
+Cursor implemented SQL + UI and refreshed docs tables.
+
+## 2026-05-12 — Pre-submission documentation alignment
+
+### What was requested
+
+Align documentation with the **current** implementation: correct automated test totals, document all notification HTTP routes and behaviors, fix architecture wording (**`INotificationPublisher`**), refresh GenAI/process docs, add **`docs/final-project-review.md`**. **No application code changes.**
+
+### What was generated/changed
+
+- **Test counts** set to **10** unit + **23** integration = **33** total across README-adjacent docs, `reference-testing-requirements.md`, `guide-architecture.md`, `guide-presentation.md`, `guide-design-decisions.md`, `process-ai-usage.md`; notification integration tests **`Clear_notifications_*`** listed in the inventory.
+- **README** route table: **`GET` / `POST .../mark-read` / `DELETE /api/notifications`** with descriptions matching `NotificationsController` / repository behavior; SignalR section covers persistence, mark-read, **Clear all**, **30-day** retention on list load.
+- **`guide-architecture.md`:** Notification diagram and narrative use **`INotificationPublisher`**, in-memory **`Channel<T>`**, **`NotificationDispatchWorker`**, SignalR to Angular.
+- **`reference-credentials.md`:** Notifications REST summary line.
+- **`reference-testing-requirements.md`:** CI note points to **`.github/workflows/ci.yml`**; optional improvements no longer imply CI is missing.
+- **`process-ai-usage.md`:** Shipped notification API (including DELETE + retention + clear UI), **33** tests, CI enforcement, single **submission snapshot** timeline row.
+- **`docs/final-project-review.md`:** Created — executive pre-submission checklist (requirements, forbidden deps, doc status, readiness).
+- Prior entry (**2026-05-11**) doc bullet clarified that older **31**-test citations are **historical**.
+
+### Validation performed
+
+- File paths and HTTP semantics cross-checked against **`NotificationsController.cs`** and **`NotificationRepository.cs`** (list + prune, delete all, mark-read).
+
+### AI involvement
+
+Documentation-only edits; **no** changes to application projects under **`backend/src`** or **`frontend/task-manager-web/src`** in this pass.

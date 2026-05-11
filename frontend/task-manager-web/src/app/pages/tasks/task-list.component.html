@@ -4,6 +4,18 @@
 </div>
 
 <div class="list-controls">
+  <label class="control control--search">
+    <span class="control-label">Search</span>
+    <input
+      type="search"
+      class="control-input"
+      placeholder="Title or description"
+      autocomplete="off"
+      [value]="searchText()"
+      (input)="onSearchInput($event)"
+      aria-label="Search tasks by title or description"
+    />
+  </label>
   <label class="control">
     <span class="control-label">Status</span>
     <select
@@ -21,12 +33,12 @@
     <span class="control-label">Per page</span>
     <select
       class="control-input"
-      [value]="pageSize()"
-      (change)="onPageSizeChange($event)"
+      [ngModel]="pageSize()"
+      (ngModelChange)="onPageSizeNgModelChange($event)"
       aria-label="Tasks per page"
     >
       @for (n of pageSizeOptions; track n) {
-        <option [value]="n">{{ n }}</option>
+        <option [value]="n.toString()">{{ n }}</option>
       }
     </select>
   </label>
@@ -38,7 +50,14 @@
 </div>
 
 @if (flash()) {
-  <p class="banner success" role="status">{{ flash() }}</p>
+  <p
+    class="banner"
+    [class.success]="flashKind() === 'success'"
+    [class.error]="flashKind() === 'error'"
+    [attr.role]="flashKind() === 'error' ? 'alert' : 'status'"
+  >
+    {{ flash() }}
+  </p>
 }
 
 @if (error()) {
@@ -54,10 +73,43 @@
     <table>
       <thead>
         <tr>
-          <th>Title</th>
-          <th>Status</th>
-          <th>Due</th>
-          <th></th>
+          <th scope="col">
+            <button
+              type="button"
+              class="th-sort"
+              (click)="onSortClick('title')"
+              [attr.aria-sort]="
+                sortColumn() === 'title' ? (sortDescending() ? 'descending' : 'ascending') : 'none'
+              "
+            >
+              Title{{ sortArrow('title') }}
+            </button>
+          </th>
+          <th scope="col">
+            <button
+              type="button"
+              class="th-sort"
+              (click)="onSortClick('status')"
+              [attr.aria-sort]="
+                sortColumn() === 'status' ? (sortDescending() ? 'descending' : 'ascending') : 'none'
+              "
+            >
+              Status{{ sortArrow('status') }}
+            </button>
+          </th>
+          <th scope="col">
+            <button
+              type="button"
+              class="th-sort"
+              (click)="onSortClick('due')"
+              [attr.aria-sort]="
+                sortColumn() === 'due' ? (sortDescending() ? 'descending' : 'ascending') : 'none'
+              "
+            >
+              Due{{ sortArrow('due') }}
+            </button>
+          </th>
+          <th scope="col" class="th-actions-col"><span class="th-static">Actions</span></th>
         </tr>
       </thead>
       <tbody>

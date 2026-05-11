@@ -1,6 +1,7 @@
 using System.Data;
 using Microsoft.Data.SqlClient;
 using TaskManager.Application.Abstractions;
+using TaskManager.Application.Dtos.Tasks;
 using TaskManager.Domain.Entities;
 using TaskManager.Domain.Enums;
 using TaskManager.Infrastructure.Data;
@@ -42,6 +43,9 @@ public sealed class TaskRepository : ITaskRepository
         TaskItemStatus? status,
         int page,
         int pageSize,
+        TaskListSortBy sortBy,
+        bool descending,
+        string? search,
         CancellationToken cancellationToken)
     {
         if (page < 1)
@@ -50,6 +54,17 @@ public sealed class TaskRepository : ITaskRepository
             pageSize = 1;
 
         var offset = (page - 1) * pageSize;
+
+        var orderColumn = sortBy switch
+        {
+            TaskListSortBy.Title => "Title",
+            TaskListSortBy.Status => "Status",
+            TaskListSortBy.DueDateUtc => "DueDateUtc",
+            _ => "CreatedAtUtc",
+        };
+        var orderDir = descending ? "DESC" : "ASC";
+
+        var (hasSearch, searchPattern) = PrepareSearchForLike(search);
 
         await using var connection = _connections.CreateConnection();
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -61,7 +76,12 @@ public sealed class TaskRepository : ITaskRepository
                 SELECT COUNT(1)
                 FROM TaskItems
                 WHERE UserId = @UserId
-                  AND (@HasStatus = 0 OR Status = @StatusVal);
+                  AND (@HasStatus = 0 OR Status = @StatusVal)
+                  AND (
+                    @HasSearch = 0
+                    OR Title LIKE @SearchPat ESCAPE '\'
+                    OR (Description IS NOT NULL AND Description LIKE @SearchPat ESCAPE '\')
+                  );
                 """;
             countCmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
             countCmd.Parameters.Add(new SqlParameter("@HasStatus", SqlDbType.Bit) { Value = status.HasValue });
@@ -69,17 +89,24 @@ public sealed class TaskRepository : ITaskRepository
             {
                 Value = status.HasValue ? (byte)status.Value : (object)DBNull.Value,
             });
+            countCmd.Parameters.Add(new SqlParameter("@HasSearch", SqlDbType.Bit) { Value = hasSearch });
+            countCmd.Parameters.Add(new SqlParameter("@SearchPat", SqlDbType.NVarChar, 500) { Value = searchPattern });
             var scalar = await countCmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
             total = scalar is int i ? i : Convert.ToInt32(scalar!, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         await using var command = connection.CreateCommand();
-        command.CommandText = """
+        command.CommandText = $"""
             SELECT Id, UserId, Title, Description, Status, DueDateUtc, CreatedAtUtc, UpdatedAtUtc
             FROM TaskItems
             WHERE UserId = @UserId
               AND (@HasStatus = 0 OR Status = @StatusVal)
-            ORDER BY CreatedAtUtc DESC
+              AND (
+                @HasSearch = 0
+                OR Title LIKE @SearchPat ESCAPE '\'
+                OR (Description IS NOT NULL AND Description LIKE @SearchPat ESCAPE '\')
+              )
+            ORDER BY {orderColumn} {orderDir}, Id {orderDir}
             OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
             """;
         command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
@@ -88,6 +115,8 @@ public sealed class TaskRepository : ITaskRepository
         {
             Value = status.HasValue ? (byte)status.Value : (object)DBNull.Value,
         });
+        command.Parameters.Add(new SqlParameter("@HasSearch", SqlDbType.Bit) { Value = hasSearch });
+        command.Parameters.Add(new SqlParameter("@SearchPat", SqlDbType.NVarChar, 500) { Value = searchPattern });
         command.Parameters.Add(new SqlParameter("@Offset", SqlDbType.Int) { Value = offset });
         command.Parameters.Add(new SqlParameter("@PageSize", SqlDbType.Int) { Value = pageSize });
 
@@ -97,6 +126,25 @@ public sealed class TaskRepository : ITaskRepository
             list.Add(Map(reader));
 
         return (list, total);
+    }
+
+    /// <summary>
+    /// Builds a LIKE pattern with ESCAPE '\' (wildcards % and _ in user input are literal).
+    /// </summary>
+    private static (bool HasSearch, string Pattern) PrepareSearchForLike(string? search)
+    {
+        if (string.IsNullOrWhiteSpace(search))
+            return (false, string.Empty);
+
+        var t = search.Trim();
+        var escaped = t
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("%", "\\%", StringComparison.Ordinal)
+            .Replace("_", "\\_", StringComparison.Ordinal);
+        var pattern = "%" + escaped + "%";
+        if (pattern.Length > 500)
+            pattern = pattern[..500];
+        return (true, pattern);
     }
 
     public async Task<TaskItem> CreateAsync(TaskItem task, CancellationToken cancellationToken)

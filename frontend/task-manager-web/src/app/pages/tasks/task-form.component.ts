@@ -9,6 +9,7 @@ import type { TaskItemStatus } from '../../core/tasks/task.models';
 import { TasksService } from '../../core/tasks/tasks.service';
 
 const FLASH_KEY = 'taskManager.flash';
+const FLASH_BANNER_KEY = 'taskManager.flashBanner';
 
 function apiMessage(err: HttpErrorResponse, fallback: string): string {
   const body = err.error;
@@ -116,6 +117,16 @@ export class TaskFormComponent {
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
+        if (err.status === 404) {
+          try {
+            globalThis.sessionStorage?.setItem(FLASH_KEY, apiMessage(err, 'Task was not found.'));
+            globalThis.sessionStorage?.setItem(FLASH_BANNER_KEY, 'error');
+          } catch {
+            /* ignore private mode */
+          }
+          void this.router.navigate(['/tasks']);
+          return;
+        }
         this.error.set(apiMessage(err, 'Could not load task.'));
       },
     });

@@ -73,6 +73,23 @@ Expect **no** matching lines. CI runs a similar check in **`.github/workflows/ci
 
 ---
 
+## Angular: `ng serve` / builder package not found
+
+**Symptom:** `npm start` fails with *Could not find the '@angular-devkit/build-angular:dev-server' builder's node package* or *Node packages may not be installed*.
+
+**Cause:** **`node_modules`** is not in the repo; dependencies were never installed in this folder.
+
+**Fix:** From **`frontend/task-manager-web`**:
+
+```powershell
+npm install
+npm start
+```
+
+Use **`npm run build`** (not `npm build`) for a production build. On a fresh clone, always run **`npm install`** once before **`npm start`**.
+
+---
+
 ## Angular cannot reach the API
 
 - Confirm API URL in **`frontend/task-manager-web/src/environments/environment.ts`** matches the port printed by **`dotnet run`** (default example **5035**).

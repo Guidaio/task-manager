@@ -26,6 +26,12 @@
   min-width: 8rem;
 }
 
+.control--search {
+  flex: 1 1 12rem;
+  min-width: 12rem;
+  max-width: 28rem;
+}
+
 .control-label {
   font-size: 0.7rem;
   font-weight: 600;
@@ -98,6 +104,43 @@ th {
   letter-spacing: 0.04em;
   color: var(--tm-muted);
   background: color-mix(in srgb, var(--tm-surface) 92%, var(--tm-accent));
+}
+
+.th-sort {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  font-size: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.th-sort:hover {
+  color: var(--tm-text);
+  text-decoration: underline;
+}
+
+.th-static {
+  display: inline-block;
+  font: inherit;
+}
+
+.th-actions-col {
+  text-align: right;
+  width: 1%;
+  white-space: nowrap;
+}
+
+.th-actions-col .th-static {
+  display: block;
 }
 
 tbody tr:last-child td {

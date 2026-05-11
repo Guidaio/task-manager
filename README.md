@@ -34,7 +34,11 @@ This project must not use:
 ## Repository Structure
 
 ```text
+.github/
+  workflows/
+    ci.yml
 backend/
+  Dockerfile
   TaskManager.sln
   src/
     TaskManager.Api/
@@ -46,10 +50,24 @@ backend/
     TaskManager.IntegrationTests/
 frontend/
   task-manager-web/
+    src/                    # application code (components, services, …)
+    public/
+    angular.json
+    package.json
+    tsconfig.json
+    tsconfig.app.json
+    tsconfig.spec.json      # Karma / unit-test compilation
 docs/
+  README.md                 # documentation index
+  brief/                    # exercise prompt (en/pt) + source/ (PDFs, DOCX)
+  guide-*.md                # architecture, design, presentation
+  reference-*.md            # credentials, testing, troubleshooting, security
+  process-*.md              # AI usage, development log
 docker-compose.yml
 README.md
 ```
+
+**Frontend tests:** The Angular app is wired for **Karma + Jasmine** (`npm run test` in `frontend/task-manager-web`, `angular.json` `test` target). Convention is **`src/**/*.spec.ts`** next to features. This repo does not include spec files yet; coverage today is **backend xUnit** (see `docs/reference-testing-requirements.md`).
 
 ## Core Green Checklist
 
@@ -70,18 +88,19 @@ SignalR and notification work starts only after this checklist is complete:
 
 Base URL: whatever port `dotnet run` prints (e.g. `http://localhost:5035`).
 
-| Method | Route | Auth |
-|--------|-------|------|
-| GET | `/api/health` | No |
-| POST | `/api/auth/register` | No |
-| POST | `/api/auth/login` | No |
+| Method | Route | Auth | Notes |
+|--------|-------|------|------|
+| GET | `/api/health` | No | |
+| POST | `/api/auth/register` | No | |
+| POST | `/api/auth/login` | No | |
 | GET | `/api/tasks` | Bearer JWT | See **Task list query** below |
-| GET | `/api/tasks/{id}` | Bearer JWT |
-| POST | `/api/tasks` | Bearer JWT |
-| PUT | `/api/tasks/{id}` | Bearer JWT |
-| DELETE | `/api/tasks/{id}` | Bearer JWT |
-| GET | `/api/notifications` | Bearer JWT |
-| POST | `/api/notifications/mark-read` | Bearer JWT |
+| GET | `/api/tasks/{id}` | Bearer JWT | |
+| POST | `/api/tasks` | Bearer JWT | |
+| PUT | `/api/tasks/{id}` | Bearer JWT | |
+| DELETE | `/api/tasks/{id}` | Bearer JWT | |
+| GET | `/api/notifications` | Bearer JWT | Returns persisted notifications for the current user (newest first). Before the query, rows older than **30 days** for that user are deleted (retention). |
+| POST | `/api/notifications/mark-read` | Bearer JWT | Body: `{ "ids": [ "guid", ... ] }` (max 50). Marks those notifications read for the user. |
+| DELETE | `/api/notifications` | Bearer JWT | Deletes **all** notification rows for the current user. **`204 No Content`** on success. |
 
 Send `Authorization: Bearer <token>` from `/api/auth/login` or register for **protected** task and notification routes. Enum `status` values serialize as JSON strings (`Pending`, `InProgress`, ...).
 
@@ -94,14 +113,17 @@ Response body: `{ "items": [ ... TaskDto ... ], "totalCount", "page", "pageSize"
 | `status` | *(none)* | Optional. `Pending`, `InProgress`, `Completed`, or `Cancelled` (case-insensitive). Omit to list all statuses. |
 | `page` | `1` | 1-based; values less than 1 are treated as 1. |
 | `pageSize` | `25` | Clamped to **1–100** (large values capped at 100). |
+| `sort` | `created` | `created` (default), `title`, `status`, or `due`. |
+| `order` | `desc` when `sort=created`; `asc` otherwise | `asc` or `desc`. Omit to use that default for the selected sort. |
+| `search` | *(none)* | Optional. Case-insensitive substring match on **title** or **description** (max **200** characters). |
 
-Example: `/api/tasks?status=Completed&page=1&pageSize=10`
+Example: `/api/tasks?status=Completed&page=1&pageSize=10&sort=title&order=asc&search=invoice`
 
-**Task create/update/delete** enqueue notifications that are stored in SQL and pushed to the signed-in user over SignalR (see below).
+**Task create/update/delete** enqueue notifications that are **persisted in SQL** and pushed to the signed-in user over **SignalR** (see below). The notification drawer can show **mark-read** state (`POST /api/notifications/mark-read`); the UI also offers **Clear all**, which calls **`DELETE /api/notifications`**.
 
 ### Realtime (SignalR)
 
-Connect to **`/hubs/notifications`** with the same JWT used for the API. Browsers cannot attach `Authorization` headers to the WebSocket upgrade, so the client sends the token via the **`access_token`** query parameter (the ASP.NET JWT bearer handler is configured to read it for that path). The Angular app uses `@microsoft/signalr` with `accessTokenFactory`, shows **in-app toasts**, and keeps a **notification center** (bell + slide-out list merged with `GET /api/notifications`).
+Connect to **`/hubs/notifications`** with the same JWT used for the API. Browsers cannot attach `Authorization` headers to the WebSocket upgrade, so the client sends the token via the **`access_token`** query parameter (the ASP.NET JWT bearer handler is configured to read it for that path). The Angular app uses `@microsoft/signalr` with `accessTokenFactory`, shows **in-app toasts** (auto-dismiss after a few seconds), and keeps a **notification center** (bell + slide-out list merged with **`GET /api/notifications`** and realtime payloads). **History** is stored in the database; **retention:** listing notifications triggers deletion of rows **older than 30 days** for that user (see **`GET /api/notifications`** above).
 
 ### Swagger / OpenAPI (Development)
 
@@ -155,10 +177,11 @@ docker run --rm -p 8080:8080 -e ASPNETCORE_ENVIRONMENT=Development -e Database__
 
 Defaults: **`ASPNETCORE_URLS=http://+:8080`**. See [`docs/reference-troubleshooting.md`](docs/reference-troubleshooting.md).
 
-Run the Angular client (expects API at `http://localhost:5035`; adjust `src/environments/environment.ts` if your port differs):
+Run the Angular client (expects API at `http://localhost:5035`; adjust `src/environments/environment.ts` if your port differs). **First time** (or after a clean clone), install dependencies then start:
 
 ```powershell
 cd .\frontend\task-manager-web
+npm install
 npm start
 ```
 
@@ -170,7 +193,7 @@ For milestone-level validation notes, see **`docs/process-development-log.md`** 
 
 - Frontend login/register.
 - Task list/create/edit/delete.
-- Notification received.
+- Notification received (toast / center); mark-read after refresh; optional **Clear all** in the notification drawer.
 - No relevant browser console errors.
 - Forbidden dependencies check: no EF Core, no Dapper, no MediatR.
 
@@ -186,3 +209,4 @@ For milestone-level validation notes, see **`docs/process-development-log.md`** 
 - [`docs/process-ai-usage.md`](docs/process-ai-usage.md)
 - [`docs/process-development-log.md`](docs/process-development-log.md)
 - [`docs/guide-presentation.md`](docs/guide-presentation.md)
+- [`docs/final-project-review.md`](docs/final-project-review.md) — pre-submission readiness summary (aligned with shipped code at last doc pass)

@@ -30,6 +30,17 @@ public sealed class NotificationsController : ControllerBase
         return Ok(items.Select(Map).ToList());
     }
 
+    [HttpDelete]
+    public async Task<IActionResult> ClearAll(CancellationToken cancellationToken)
+    {
+        var userId = User.TryGetUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Missing or invalid authentication." });
+
+        await _notifications.DeleteAllForUserAsync(userId.Value, cancellationToken).ConfigureAwait(false);
+        return NoContent();
+    }
+
     [HttpPost("mark-read")]
     public async Task<IActionResult> MarkRead(
         [FromBody] MarkNotificationsReadRequest? body,

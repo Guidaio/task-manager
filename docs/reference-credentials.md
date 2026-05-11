@@ -58,6 +58,7 @@ Connection strings for the API live in `appsettings.Development.json` (same pass
 | Health | `GET /api/health` |
 | Swagger (Development) | `http://localhost:5035/swagger` |
 | SignalR hub | `/hubs/notifications` (JWT via `access_token` query for WebSockets; the Angular client uses `accessTokenFactory`) |
+| Notifications REST | `GET /api/notifications` (list + **30-day retention** prune per user), `POST /api/notifications/mark-read`, `DELETE /api/notifications` (clear all for user) |
 
 Run:
 

@@ -64,7 +64,20 @@
   <aside id="notification-panel" class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="notif-drawer-title">
     <div class="drawer-header">
       <h2 id="notif-drawer-title">Notifications</h2>
-      <button type="button" class="drawer-close" (click)="center.closeDrawer()" aria-label="Close notifications">×</button>
+      <div class="drawer-header-actions">
+        @if (!center.loading() && !center.loadError() && center.items().length > 0) {
+          <button
+            type="button"
+            class="drawer-action"
+            (click)="center.clearAllPersisted()"
+            [disabled]="center.clearing()"
+            aria-label="Clear all notifications"
+          >
+            {{ center.clearing() ? 'Clearing…' : 'Clear all' }}
+          </button>
+        }
+        <button type="button" class="drawer-close" (click)="center.closeDrawer()" aria-label="Close notifications">×</button>
+      </div>
     </div>
     @if (center.loading()) {
       <p class="drawer-muted">Loading…</p>
@@ -87,6 +100,9 @@
           </li>
         }
       </ul>
+    }
+    @if (!center.loading() && !center.loadError()) {
+      <p class="drawer-retention-hint">Items older than 30 days are removed automatically.</p>
     }
   </aside>
 }

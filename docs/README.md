@@ -19,6 +19,7 @@ The repository **[README.md](../README.md)** is the main **runbook** (build, run
 | [guide-architecture.md](guide-architecture.md) | Clean Architecture, layers, data and auth flows, implementation status. |
 | [guide-design-decisions.md](guide-design-decisions.md) | Rationale: ADO.NET, JWT, FluentValidation, `Result`, tests, SignalR sequencing, etc. |
 | [guide-presentation.md](guide-presentation.md) | Demo outline and interview talking points. |
+| [final-project-review.md](final-project-review.md) | Pre-submission alignment checklist (requirements, tests, docs, risks). |
 
 ## Process (planning and execution)
 
