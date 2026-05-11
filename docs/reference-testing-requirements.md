@@ -37,7 +37,7 @@ dotnet test .\backend\TaskManager.sln
 
 If **`dotnet test` fails with MSB3027 / “file is being used by another process”**, stop any running **`TaskManager.Api`** (or other processes locking `bin\Debug` under the API project), then run tests again.
 
-**Latest verification (local):** **31** tests — **10** unit (`TaskManager.UnitTests`), **21** integration (`TaskManager.IntegrationTests`), all passing when SQL is up and file locks are avoided.
+**Latest verification (local):** **33** tests — **10** unit (`TaskManager.UnitTests`), **23** integration (`TaskManager.IntegrationTests`), all passing when SQL is up and file locks are avoided.
 
 ### Unit tests (application rules, mocked repositories)
 
@@ -79,6 +79,8 @@ If **`dotnet test` fails with MSB3027 / “file is being used by another process
 | `List_notifications_with_auth_returns_ok` | `NotificationsApiTests.cs` | R9 |
 | `Task_create_eventually_persist_notification` | `NotificationsApiTests.cs` | R9 (DB + async worker) |
 | `Mark_read_persists_and_list_returns_isRead` | `NotificationsApiTests.cs` | R9 read persistence |
+| `Clear_notifications_without_auth_returns_unauthorized` | `NotificationsApiTests.cs` | R9 + R5 |
+| `Clear_notifications_removes_all_rows_for_user` | `NotificationsApiTests.cs` | R9 clear-all + SQL |
 
 ---
 
@@ -86,7 +88,7 @@ If **`dotnet test` fails with MSB3027 / “file is being used by another process
 
 Aligned with [README final smoke checklist](../README.md):
 
-- Angular login/register, task CRUD, **notification visible** (toast and/or notification center).
+- Angular login/register, task CRUD, **notification visible** (toast and/or notification center), optional **Clear all**.
 - Browser console free of relevant errors.
 - Optional: Swagger `/swagger` try-out for reviewers.
 
@@ -111,7 +113,7 @@ cd .\backend
 dotnet list TaskManager.sln package --include-transitive | Select-String -Pattern "EntityFramework|Dapper|MediatR|Microsoft.EntityFrameworkCore"
 ```
 
-(Optional hardening for CI: fail the job if that Select-String finds output.)
+**CI:** GitHub Actions (`.github/workflows/ci.yml`) already runs **`dotnet build`**, **`dotnet test`** against a SQL Server service, frontend build, and **forbidden-dependency** checks on `*.csproj` and `dotnet list ... --include-transitive` (see workflow file for exact patterns).
 
 ---
 
@@ -131,6 +133,6 @@ These are **not** required to satisfy the README checklist; documenting them avo
 
 Reasonable for a real product, but **not necessary** to call this exercise complete:
 
-- **CI:** `dotnet build`, `dotnet test`, forbidden-package grep on every PR.
+- Stricter CI gates (e.g. coverage thresholds, E2E) beyond what `.github/workflows/ci.yml` already runs.
 
 Otherwise the stack matches a typical “Senior .NET + Angular + SQL + tests + SignalR notification” submission without over-building.

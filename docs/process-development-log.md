@@ -387,8 +387,33 @@ Header **Actions** aligned with row buttons; **search** tasks by title/descripti
 - **API:** Optional **`search`** query on **`GET /api/tasks`** (substring on title or description, parameterized `LIKE` with **`ESCAPE '\'`**); **400** if longer than **200** characters after trim.
 - **Angular:** Debounced **Search** field; **Actions** `<th>` right-aligned to match the action button group.
 - **Tests:** One unit test (search length); two integration tests (search matches + too long).
-- **Docs:** Test totals **31** (**10** + **21**).
+- **Docs:** Traceability cited **31** (**10** + **21**) at the time of that change; superseded by pre-submission alignment (**33** total; see latest `process-development-log` entry).
 
 ### AI involvement
 
 Cursor implemented SQL + UI and refreshed docs tables.
+
+## 2026-05-12 — Pre-submission documentation alignment
+
+### What was requested
+
+Align documentation with the **current** implementation: correct automated test totals, document all notification HTTP routes and behaviors, fix architecture wording (**`INotificationPublisher`**), refresh GenAI/process docs, add **`docs/final-project-review.md`**. **No application code changes.**
+
+### What was generated/changed
+
+- **Test counts** set to **10** unit + **23** integration = **33** total across README-adjacent docs, `reference-testing-requirements.md`, `guide-architecture.md`, `guide-presentation.md`, `guide-design-decisions.md`, `process-ai-usage.md`; notification integration tests **`Clear_notifications_*`** listed in the inventory.
+- **README** route table: **`GET` / `POST .../mark-read` / `DELETE /api/notifications`** with descriptions matching `NotificationsController` / repository behavior; SignalR section covers persistence, mark-read, **Clear all**, **30-day** retention on list load.
+- **`guide-architecture.md`:** Notification diagram and narrative use **`INotificationPublisher`**, in-memory **`Channel<T>`**, **`NotificationDispatchWorker`**, SignalR to Angular.
+- **`reference-credentials.md`:** Notifications REST summary line.
+- **`reference-testing-requirements.md`:** CI note points to **`.github/workflows/ci.yml`**; optional improvements no longer imply CI is missing.
+- **`process-ai-usage.md`:** Shipped notification API (including DELETE + retention + clear UI), **33** tests, CI enforcement, single **submission snapshot** timeline row.
+- **`docs/final-project-review.md`:** Created — executive pre-submission checklist (requirements, forbidden deps, doc status, readiness).
+- Prior entry (**2026-05-11**) doc bullet clarified that older **31**-test citations are **historical**.
+
+### Validation performed
+
+- File paths and HTTP semantics cross-checked against **`NotificationsController.cs`** and **`NotificationRepository.cs`** (list + prune, delete all, mark-read).
+
+### AI involvement
+
+Documentation-only edits; **no** changes to application projects under **`backend/src`** or **`frontend/task-manager-web/src`** in this pass.

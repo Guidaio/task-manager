@@ -21,7 +21,7 @@ This document emphasizes **what exists in code today**. Any **optional future** 
 | **Angular frontend** | **Implemented** | SPA in `frontend/task-manager-web`: auth, task CRUD, SignalR client, toasts, notification center (drawer). |
 | **`SignalR` + `BackgroundService` + `Channel<T>`** | **Implemented** | Notifications hub, JWT via `access_token` query on negotiate; worker dispatches after task mutations; SQL persistence. |
 | Unit tests (Application) | **Implemented** | Ten tests targeting `AuthService` / `TaskService` (including task list paging, search length guard). |
-| Integration tests (`WebApplicationFactory`) | **Implemented** | **Twenty-one** tests: health, auth, tasks (including user isolation, **list filter + pagination + sort + search**), notifications list + async persistence after task create + **mark-read persistence** (`Mark_read_persists_and_list_returns_isRead`). |
+| Integration tests (`WebApplicationFactory`) | **Implemented** | **Twenty-three** tests: health, auth, tasks (including user isolation, **list filter + pagination + sort + search**), notifications (list, async persistence after task create, **mark-read**, **unauthorized clear**, **clear-all**). |
 
 ---
 
@@ -108,28 +108,36 @@ sequenceDiagram
 
 ## Notification flow (implemented)
 
-**Status: implemented** — task create/update/delete enqueue notification work; `BackgroundService` drains a channel and pushes to SignalR; Angular shows toasts and a notification drawer backed by `GET /api/notifications`.
+**Status: implemented** — On task create/update/delete, `TaskService` calls **`INotificationPublisher`**, which enqueues a **`NotificationDispatchRequest`** onto an in-memory **`Channel<T>`**. A **`BackgroundService`** (`NotificationDispatchWorker`) reads from the channel, **persists** the notification via **`INotificationRepository`**, and pushes the payload to the user over **SignalR** (`NotificationsHub`). The Angular client shows **toasts** and merges realtime payloads into the **notification center** backed by **`GET /api/notifications`**.
+
+Additional **HTTP** behavior (see `NotificationsController` / `NotificationRepository`):
+
+- **`GET /api/notifications`** returns the user’s notifications (newest first). Before the query, the repository **deletes** rows older than **30 days** (UTC) for that user.
+- **`POST /api/notifications/mark-read`** persists read state.
+- **`DELETE /api/notifications`** removes **all** notifications for the user (**`204 No Content`**).
 
 ```mermaid
 flowchart LR
     subgraph api [Api]
         Tasks[TasksController]
-        Hub[NotificationHub]
+        Hub[NotificationsHub]
     end
     subgraph app [Application]
         TaskSvc[TaskService]
-        Queue[INotificationQueue_Channel]
+        Publisher[INotificationPublisher]
     end
     subgraph infra [Infrastructure]
-        Worker[BackgroundService_Dispatcher]
+        Channel[Channel_T_writer_reader]
+        Worker[NotificationDispatchWorker]
     end
     subgraph client [Angular]
-        UI[Toast_or_feed]
+        UI[Toasts_and_center]
     end
 
     Tasks --> TaskSvc
-    TaskSvc --> Queue
-    Queue --> Worker
+    TaskSvc --> Publisher
+    Publisher --> Channel
+    Channel --> Worker
     Worker --> Hub
     Hub --> UI
 ```
@@ -137,9 +145,9 @@ flowchart LR
 **Intent:**
 
 1. Task mutation completes and persists.
-2. A notification message is enqueued (in-memory `Channel<T>`).
-3. A **BackgroundService** consumes the queue and pushes to the correct SignalR connection/group for the user.
-Angular displays **toasts** and a **notification center** (recent items from the API + realtime merge).
+2. Application code publishes work through **`INotificationPublisher`** (backed by **`Channel<T>`** in Infrastructure).
+3. A **BackgroundService** consumes the queue, writes SQL, and pushes to the correct SignalR group for the user.
+4. Angular displays **toasts** and a **notification center** (recent items from the API + realtime merge); **Clear all** calls **`DELETE /api/notifications`**.
 
 ---
 

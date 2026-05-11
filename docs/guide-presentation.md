@@ -49,10 +49,10 @@ See **`docs/guide-architecture.md`** for implementation status and sequence diag
 | Layer | Goal |
 |--------|------|
 | **Unit tests** | Fast feedback on **application rules**: duplicate email, invalid credentials, empty title, invalid enum payload, not-found / wrong-user paths via mocked repositories (`Moq`). |
-| **Integration tests** | **`WebApplicationFactory`**: real HTTP pipeline + database, JWT, **401** without token, task CRUD, **task list status filter + pagination + server-side column sort + title/description search**, **user isolation** between two users, notifications list + persisted row after task create, **notification mark-read persistence**. |
-| **Manual / smoke** | README checklist + browser: login/register, CRUD, notifications, **no relevant console errors**, forbidden-deps verification (see `docs/reference-testing-requirements.md`). |
+| **Integration tests** | **`WebApplicationFactory`**: real HTTP pipeline + database, JWT, **401** without token, task CRUD, **task list status filter + pagination + server-side column sort + title/description search**, **user isolation** between two users, notifications list + persisted row after task create, **notification mark-read persistence**, **DELETE /api/notifications** clear-all coverage. |
+| **Manual / smoke** | README checklist + browser: login/register, CRUD, notifications (toast, center, **Clear all**), **no relevant console errors**, forbidden-deps verification (see `docs/reference-testing-requirements.md`). |
 
-**Today:** **10** unit tests + **21** integration tests (**31** automated tests total). **SignalR delivery** to the browser is not covered by WebSocket-level integration tests; **the developer completed final manual smoke testing** (realtime toasts/center, mark-read after refresh, clean console) before submission—see `docs/process-development-log.md` (latest entry).
+**Today:** **10** unit tests + **23** integration tests (**33** automated tests total). **SignalR delivery** to the browser is not covered by WebSocket-level integration tests; **the developer completed final manual smoke testing** (realtime toasts/center, mark-read after refresh, clean console) before submission—see `docs/process-development-log.md` (latest entry).
 
 ---
 
@@ -102,7 +102,7 @@ See **`docs/guide-architecture.md`** for implementation status and sequence diag
 
 - Frontend login/register.
 - Task list/create/edit/delete.
-- Notification received (toast and/or **notification center**); mark-read survives refresh.
+- Notification received (toast and/or **notification center**); mark-read survives refresh; optional **Clear all** in the drawer.
 - No relevant browser console errors.
 - Forbidden dependencies check: no EF Core, no Dapper, no MediatR.
 - Automated: `dotnet test .\backend\TaskManager.sln` (stop the API first if builds report file-lock / MSB3027 errors).

@@ -82,9 +82,9 @@ The items below are **implemented** in this repository. Validation combines **au
 
 ### SignalR and notifications
 
-- **Shipped:** `NotificationsHub`, in-memory `Channel<T>`, `BackgroundService` dispatcher, SQL notification persistence, `GET /api/notifications`, **`POST /api/notifications/mark-read`**.
-- **Validate (automated):** Integration tests cover notification list, async row after task mutation, and **mark-read persistence** + list `isRead`.
-- **Validate (manual, developer):** Angular connection, toast/center updates after task CRUD, **no critical console errors**, mark-read survives refresh (see latest development-log entry).
+- **Shipped:** `NotificationsHub`, in-memory **`Channel<T>`** with **`INotificationPublisher`** (application abstraction; Infrastructure writes to the channel), **`NotificationDispatchWorker`** (`BackgroundService`) for SQL persistence + SignalR push, `GET /api/notifications`, **`POST /api/notifications/mark-read`**, **`DELETE /api/notifications`** (clear all rows for the user, **`204 No Content`**), and **retention:** on **`GET /api/notifications`**, rows older than **30 days** (UTC) for that user are deleted before the list is returned. Angular: toasts, notification center, **Clear all** (calls DELETE).
+- **Validate (automated):** Integration tests cover notification list, async row after task mutation, **mark-read persistence** + list `isRead`, **unauthorized** clear attempt, and **clear-all** removes persisted rows.
+- **Validate (manual, developer):** Angular connection, toast/center updates after task CRUD, **no critical console errors**, mark-read survives refresh, optional clear-all (see latest development-log entry).
 
 ### SQL / ADO.NET
 
@@ -128,8 +128,8 @@ Also inspect `*.csproj` files for `<PackageReference>` entries.
 
 ### Ongoing discipline
 
-- Prefer explicit dependency review **before each milestone merge** and before submission.
-- Optionally add a CI step later that fails if forbidden package IDs appear in `dotnet list package` output.
+- Run forbidden-deps commands (above) **before submission** and on dependency changes.
+- **CI:** The repository **already** enforces forbidden packages in **`.github/workflows/ci.yml`** (grep on `*.csproj` + `dotnet list ... --include-transitive` with fail patterns). Local `dotnet test` remains the author’s responsibility when the API process holds file locks (MSB3027).
 
 ---
 
@@ -143,6 +143,6 @@ Also inspect `*.csproj` files for `<PackageReference>` entries.
 | Step 3 | ADO.NET repositories, initializer + seed, BCrypt hashing, symmetric JWT issuance + bearer middleware wired at startup. |
 | Step 3 | Notifications FK to `TaskItems` uses **`ON DELETE NO ACTION`** to avoid SQL Server multiple cascade paths. |
 | Step 4 | REST API (auth + tasks + health), FluentValidation, correlation + exception middleware, CORS; **Swagger UI** at `/swagger` in Development with JWT bearer for Try-it-out. |
-| Later | Angular SPA, notifications REST + SignalR, notification mark-read, task list **filter + pagination + sort + search**, **21** integration tests (**31** total with **10** unit tests); reference **troubleshooting** + **security** docs; **developer manual smoke** before submission (`docs/process-development-log.md`). |
+| Submission snapshot (2026-05) | Full stack shipped: Angular SPA, SignalR hub, notifications persisted in SQL, **`GET` / `POST /api/notifications/mark-read` / `DELETE /api/notifications`**, **30-day retention** prune on list load, in-app **Clear all**, **`INotificationPublisher`** + **`Channel<T>`** + **`BackgroundService`** dispatch, task list **filter + pagination + sort + search**. Automated tests: **10** unit + **23** integration = **33** total. **CI:** `.github/workflows/ci.yml` (build, tests + SQL, frontend build, forbidden-deps). **Pre-submission doc pass:** README + guides + `process-ai-usage` + `reference-testing-requirements` + **`docs/final-project-review.md`**, architecture diagram wording (**`INotificationPublisher`**); **no** application code in doc-only alignment. |
 
 Further rows should be appended as the project evolves.
