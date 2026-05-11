@@ -23,6 +23,52 @@ The application will let authenticated users register, log in, and manage their 
 - **Docker Desktop** (or compatible engine) for **SQL Server** via Compose
 - **SQL Server** via **`docker compose`** (see below)—no standalone local instance required for the default dev path
 
+## Quick start (from scratch)
+
+**Working directory:** open a terminal in the **repository root**—the folder that contains `README.md`, `docker-compose.yml`, `backend\`, and `frontend\` (not inside `backend` or `frontend`).
+
+1. **Prerequisites** — Install **.NET 8 SDK**, **Node.js (LTS) + npm**, and **Docker Desktop** (or another engine that provides `docker compose`).
+
+2. **Start SQL Server** with Docker Compose:
+
+   ```powershell
+   docker compose up -d sqlserver
+   ```
+
+   First startup can take **30–60 seconds**. Ensure the container is healthy (`docker compose ps`, or check Docker Desktop) before starting the API. The app expects SQL at **`localhost:1433`** (see `backend/src/TaskManager.Api/appsettings.Development.json`).
+
+3. **Run the API** (Development; uses `http://localhost:5035` from the default **http** profile):
+
+   ```powershell
+   dotnet run --project .\backend\src\TaskManager.Api\TaskManager.Api.csproj
+   ```
+
+   Wait for a log line like **Now listening on: `http://localhost:5035`**. If the DB was not ready, restart the API after SQL is healthy.
+
+4. **Run the Angular app** (second terminal, still from repo root for `cd`):
+
+   ```powershell
+   cd .\frontend\task-manager-web
+   npm install
+   npm start
+   ```
+
+   Browse **`http://localhost:4200`**. The dev config points at the API on port **5035** (`frontend/task-manager-web/src/environments/environment.ts`).
+
+5. **Demo credentials** — Sign in with the seeded user (see **[Demo credentials](#demo-credentials)** below), or use **Register** in the UI.
+
+6. **Run backend tests** — **Integration tests need SQL running** (step 2). **Stop the API** process first if `dotnet test` fails with **MSB3027** / “file is being used by another process” (locked DLLs under `TaskManager.Api`).
+
+   ```powershell
+   dotnet test .\backend\TaskManager.sln
+   ```
+
+   Optional: from repo root, **`.\scripts\verify-backend.ps1`** runs **`dotnet build`** then **`dotnet test`** on the solution (same SQL / stop-API notes apply). Use **`.\scripts\verify-backend.ps1 -SkipTest`** to build only.
+
+7. **Troubleshooting** — Common issues: SQL not up or wrong port, API started before SQL was ready, CORS/API URL mismatch, locked files during tests. See **[`docs/reference-troubleshooting.md`](docs/reference-troubleshooting.md)** (Docker/SQL, MSB3027, integration DB, forbidden dependencies).
+
+On **macOS/Linux**, use `/` in paths (e.g. `docker compose up -d sqlserver`, `dotnet run --project backend/src/TaskManager.Api/TaskManager.Api.csproj`). **`docker-compose` (v1)** may work instead of **`docker compose`** if that is what your machine provides.
+
 ## Restrictions
 
 This project must not use:
@@ -63,6 +109,8 @@ docs/
   guide-*.md                # architecture, design, presentation
   reference-*.md            # credentials, testing, troubleshooting, security
   process-*.md              # AI usage, development log
+scripts/
+  verify-backend.ps1        # optional: dotnet build + test from repo root (PowerShell)
 docker-compose.yml
 README.md
 ```
@@ -140,33 +188,15 @@ After the database initializer runs (API startup with SQL Server available), a d
 
 Fixed demo user id (for reference): `11111111-1111-1111-1111-111111111111`. Two sample tasks are seeded when that user has no tasks.
 
-**Full dev reference** (SQL `sa`, ports, JWT, SignalR, quick checklist): see [`docs/reference-credentials.md`](docs/reference-credentials.md).
+**Full dev reference** (SQL `sa`, ports, JWT, SignalR): see [`docs/reference-credentials.md`](docs/reference-credentials.md).
 
-Start SQL Server:
-
-```powershell
-docker compose up -d sqlserver
-```
-
-Build the backend:
+Commands for Docker, API, frontend, and tests are in **[Quick start (from scratch)](#quick-start-from-scratch)**. To compile without running:
 
 ```powershell
 dotnet build .\backend\TaskManager.sln
 ```
 
-Run backend tests:
-
-```powershell
-dotnet test .\backend\TaskManager.sln
-```
-
-Run the API (Development profile uses `appsettings.Development.json`; requires SQL Server reachable):
-
-```powershell
-dotnet run --project .\backend\src\TaskManager.Api\TaskManager.Api.csproj
-```
-
-### Optional: API Docker image
+## Optional: API Docker image
 
 Multi-stage build from **repository root** (requires Docker). SQL must still be reachable from the container (configure connection string via environment for your network).
 
@@ -176,16 +206,6 @@ docker run --rm -p 8080:8080 -e ASPNETCORE_ENVIRONMENT=Development -e Database__
 ```
 
 Defaults: **`ASPNETCORE_URLS=http://+:8080`**. See [`docs/reference-troubleshooting.md`](docs/reference-troubleshooting.md).
-
-Run the Angular client (expects API at `http://localhost:5035`; adjust `src/environments/environment.ts` if your port differs). **First time** (or after a clean clone), install dependencies then start:
-
-```powershell
-cd .\frontend\task-manager-web
-npm install
-npm start
-```
-
-Browse `http://localhost:4200`. CORS allows this origin against the API.
 
 ## Final Smoke Test Checklist
 
@@ -210,3 +230,4 @@ For milestone-level validation notes, see **`docs/process-development-log.md`** 
 - [`docs/process-development-log.md`](docs/process-development-log.md)
 - [`docs/guide-presentation.md`](docs/guide-presentation.md)
 - [`docs/final-project-review.md`](docs/final-project-review.md) — pre-submission readiness summary (aligned with shipped code at last doc pass)
+- **[`scripts/verify-backend.ps1`](scripts/verify-backend.ps1)** — optional PowerShell helper: `dotnet build` + `dotnet test` from repo root (see Quick start; stop API if MSB3027)
